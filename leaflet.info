@@ -1,0 +1,6 @@
+name = Leaflet
+description = Integration with the Leaflet map scripting library.
+core = 7.x
+dependencies[] = libraries
+files[] = leaflet.module
+files[] = leaflet.install

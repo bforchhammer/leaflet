@@ -1,0 +1,98 @@
+<?php
+
+function leaflet_load_library() {
+  static $static_cache = FALSE;
+  
+  if (!$static_cache) {
+    $path = libraries_get_path('leaflet');
+    $file = $path . '/dist/leaflet.js';
+    if (file_exists($file)) {
+      drupal_add_js($file);
+      drupal_add_css($path . '/dist/leaflet.css');
+      $static_cache = $file;
+    }
+  }
+  return $static_cache; 
+}
+
+/**
+ * Implements hook_requirements().
+ */
+function leaflet_requirements($phase) {
+  $requirements = array();
+
+  // Report Drupal version
+  if ($phase == 'runtime' && !file_exists(libraries_get_path('leaflet') . '/leaflet.js')) {
+    $requirements['leaflet'] = array(
+      'title' => t('Leaflet library not found'),
+      'value' => t('The %leaflet javascript library was not found. Please %download it into the libraries folder.', 
+        array(
+          '%leaflet' => l('Leaflet', 'http://leaflet.cloudmade.com'),
+          '%download' => l('download', 'http://leaflet.cloudmade.com/download.html'),          
+        )),
+      'severity' => REQUIREMENT_ERROR
+    );
+  }
+  
+  return $requirements;
+}
+
+/**
+ * Implements hook_theme().
+ */
+function leaflet_theme($existing, $type, $theme, $path) {
+  return array(
+    'leaflet_map' => array(
+      'arguments' => array('map_id' => NULL),
+      'template' => 'leaflet_map',
+    ),
+  );
+}
+
+function leaflet_render_map($layers = array(), $features = array()) {
+  $map_id = 'leaflet_map_' . REQUEST_TIME;
+  leaflet_load_library();
+  drupal_add_js(drupal_get_path('module', 'leaflet') . '/leaflet.drupal.js');
+  $settings = array(
+    'mapId' => $map_id,
+    'layers' => $layers,
+    'features' => $features
+  );
+  drupal_add_js(array('leaflet' => array($settings)), 'setting');
+
+  return theme('leaflet_map', array('map_id' => $map_id));
+}
+
+/**
+ * Implements hook_field_formatter_info().
+ */
+function leaflet_field_formatter_info() {
+  $formatters = array();
+
+  if (module_exists('geofield')) {  
+    $formatters['geofield_leaflet'] = array(
+      'label' => t('Leaflet'),
+      'field types' => array('geofield'),
+      'settings' => array('data' => ''),
+    );
+  }
+  
+  return $formatters;
+}
+
+/**
+ * Implements hook_field_formatter_view().
+ */
+function leaflet_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
+  $element = array();
+  $settings = $display['settings'];
+dpm($items);
+  switch ($display['type']) {
+    case 'geofield_leaflet':
+      $element[0] = array('#markup' => leaflet_render_map(array('http://a.tiles.mapbox.com/mapbox/1.0.0/natural-earth-2/{z}/{x}/{y}.png'), $items)); 
+      return $element;
+  }
+
+  return $element;
+}
+
