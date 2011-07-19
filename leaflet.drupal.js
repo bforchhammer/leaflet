@@ -4,7 +4,7 @@ Drupal.behaviors.leaflet = {
       console.log(this);
       var map = new L.Map(this.mapId, {
           center: new L.LatLng(this.features[0]['lat'], this.features[0]['lon']), 
-          zoom: 5//this.zoom
+          zoom: 3//this.zoom
       });
       
       var tileUrl = this.layers[0],

@@ -86,7 +86,7 @@ function leaflet_field_formatter_info() {
 function leaflet_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
   $element = array();
   $settings = $display['settings'];
-dpm($items);
+
   switch ($display['type']) {
     case 'geofield_leaflet':
       $element[0] = array('#markup' => leaflet_render_map(array('http://a.tiles.mapbox.com/mapbox/1.0.0/natural-earth-2/{z}/{x}/{y}.png'), $items)); 
