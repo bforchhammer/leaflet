@@ -1,7 +1,6 @@
 Drupal.behaviors.leaflet = {
   attach: function (context, settings) {
     jQuery(settings.leaflet).each(function() {
-      console.log(this);
       // load a settings object with all of our map settings
       var settings = new Object();
       for (setting in this.map.settings) {
@@ -12,13 +11,20 @@ Drupal.behaviors.leaflet = {
       var map = new L.Map(this.mapId, settings);
 
       // add map layers
+      var layers = new Array();
       for (layer in this.map.layers) {
         map_layer = new L.TileLayer(this.map.layers[layer].urlTemplate, 
           {
             scheme: this.map.layers[layer].scheme
           }
         );
-        map.addLayer(map_layer);
+        map.addLayer(map_layer);        
+        layers[layer] = map_layer;
+      }
+      
+      // add layer switcher
+      if (this.map.settings.layerControl) {
+        map.addControl(new L.Control.Layers(layers));        
       }
       
       // add features
@@ -39,6 +45,12 @@ Drupal.behaviors.leaflet = {
       }
       else {
         map.fitBounds(new L.LatLngBounds(bounds));        
+      }
+
+      // add attribution
+      if (this.map.settings.attributionControl) {
+        map.attributionControl.setPrefix(this.map.attribution.prefix);
+        map.attributionControl.addAttribution(this.map.attribution.text);
       }
     });
   }
