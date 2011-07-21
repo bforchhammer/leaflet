@@ -1,5 +1,5 @@
 <?php
-require_once('leaflet.formatters.inc');
+require_once ('leaflet.formatters.inc');
 
 /**
  * Implements hook_requirements().
@@ -11,15 +11,16 @@ function leaflet_requirements($phase) {
   if ($phase == 'runtime' && !file_exists(libraries_get_path('leaflet') . '/leaflet.js')) {
     $requirements['leaflet'] = array(
       'title' => t('Leaflet library not found'),
-      'value' => t('The %leaflet javascript library was not found. Please %download it into the libraries folder.', 
+      'value' => t('The %leaflet javascript library was not found. Please %download it into the libraries folder.',
         array(
           '%leaflet' => l('Leaflet', 'http://leaflet.cloudmade.com'),
-          '%download' => l('download', 'http://leaflet.cloudmade.com/download.html'),          
-        )),
-      'severity' => REQUIREMENT_ERROR
+          '%download' => l('download', 'http://leaflet.cloudmade.com/download.html'),
+        )
+      ),
+      'severity' => REQUIREMENT_ERROR,
     );
   }
-  
+
   return $requirements;
 }
 
@@ -60,9 +61,10 @@ function leaflet_library() {
 /**
  * Load all Leaflet required client files and return markup for a map.
  *
- * @param array $map 
- * @param array $features 
- * @param string $height 
+ * @param array $map
+ * @param array $features
+ * @param string $height
+ *
  * @return string map markup
  */
 function leaflet_render_map($map, $features = array(), $height = '400px') {
@@ -72,7 +74,7 @@ function leaflet_render_map($map, $features = array(), $height = '400px') {
   $settings = array(
     'mapId' => $map_id,
     'map' => $map,
-    'features' => $features
+    'features' => $features,
   );
   drupal_add_js(array('leaflet' => array($settings)), 'setting');
 
@@ -90,25 +92,27 @@ function leaflet_map_get_info($map = NULL) {
     $drupal_static_fast['leaflet_map_info'] = &drupal_static(__FUNCTION__);
   }
   $map_info = &$drupal_static_fast['leaflet_map_info'];
-  
+
   if (empty($map_info)) {
     if ($cache = cache_get("leaflet_map_info")) {
       $map_info = $cache->data;
     }
     else {
       $map_info = module_invoke_all('leaflet_map_info');
-      // Let other modules alter the entity info.
+
+      // Let other modules alter the map info.
       drupal_alter('leaflet_map_info', $map_info);
-      cache_set("leaflet_map_info", $map_info);      
-    }  
+
+      cache_set("leaflet_map_info", $map_info);
+    }
   }
-  
+
   if (empty($map)) {
     return $map_info;
   }
   elseif (isset($map_info[$map])) {
     return $map_info[$map];
-  }  
+  }
 }
 
 /**
@@ -119,30 +123,31 @@ function leaflet_map_get_info($map = NULL) {
 function leaflet_leaflet_map_info() {
   return array(
     'leaflet_default' =>
-      array(
-        'label' => 'Default',
-        'description' => t('Leaflet default map.'),
-        'settings' => array(
-          'zoom' => 18,
-          'minZoom' => 0,
-          'maxZoom' => 18,
-          'dragging' => TRUE,
-          'touchZoom' => TRUE,
-          'scrollWheelZoom' => TRUE,
-          'doubleClickZoom' => TRUE,
-          'zoomControl' => TRUE,
-          'attributionControl' => TRUE,
-          'trackResize' => TRUE,
-          'fadeAnimation' => TRUE,
-          'zoomAnimation' => TRUE,
-          'closePopupOnClick' => TRUE,
+    array(
+      'label' => 'Default',
+      'description' => t('Leaflet default map.'),
+      'settings' => array(
+        'zoom' => 18,
+        'minZoom' => 0,
+        'maxZoom' => 18,
+        'dragging' => TRUE,
+        'touchZoom' => TRUE,
+        'scrollWheelZoom' => TRUE,
+        'doubleClickZoom' => TRUE,
+        'zoomControl' => TRUE,
+        'attributionControl' => TRUE,
+        'trackResize' => TRUE,
+        'fadeAnimation' => TRUE,
+        'zoomAnimation' => TRUE,
+        'closePopupOnClick' => TRUE,
+      ),
+      'layers' => array(
+        'earth' => array(
+          'urlTemplate' => 'http://a.tiles.mapbox.com/mapbox/1.0.0/natural-earth-1/{z}/{x}/{y}.png',
+          'scheme' => 'tms',
         ),
-        'layers' => array(
-          'earth' => array(
-            'urlTemplate' => 'http://a.tiles.mapbox.com/mapbox/1.0.0/natural-earth-1/{z}/{x}/{y}.png',
-            'scheme' => 'tms'
-          )
-        )
-    )
-  );  
+      ),
+    ),
+  );
 }
+
