@@ -13,11 +13,12 @@ Drupal.behaviors.leaflet = {
       // add map layers
       var layers = new Array();
       for (layer in this.map.layers) {
-        map_layer = new L.TileLayer(this.map.layers[layer].urlTemplate, 
-          {
-            scheme: this.map.layers[layer].scheme
-          }
-        );
+        map_layer = new L.TileLayer(this.map.layers[layer].urlTemplate);
+        if (this.map.layers[layer].options) {
+          for (option in this.map.layers[layer].options) {
+             map_layer.options[option] = this.map.layers[layer].options[option];
+           }          
+        }
         map.addLayer(map_layer);        
         layers[layer] = map_layer;
       }
