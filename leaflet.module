@@ -122,9 +122,9 @@ function leaflet_map_get_info($map = NULL) {
  */
 function leaflet_leaflet_map_info() {
   return array(
-    'leaflet_default' =>
+    'OSM Mapnik' =>
     array(
-      'label' => 'Default',
+      'label' => 'OSM Mapnik',
       'description' => t('Leaflet default map.'),
       'settings' => array(
         'zoom' => 18,
@@ -143,8 +143,10 @@ function leaflet_leaflet_map_info() {
       ),
       'layers' => array(
         'earth' => array(
-          'urlTemplate' => 'http://a.tiles.mapbox.com/mapbox/1.0.0/natural-earth-1/{z}/{x}/{y}.png',
-          'scheme' => 'tms',
+          'urlTemplate' => 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+          'options' => array(
+            'attribution' => 'OSM Mapnik'
+          )
         ),
       ),
     ),
