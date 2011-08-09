@@ -25,18 +25,30 @@ Drupal.behaviors.leaflet = {
       
       // add layer switcher
       if (this.map.settings.layerControl) {
-        map.addControl(new L.Control.Layers(layers));        
+        map.addControl(new L.Control.Layers(layers));
       }
       
       // add features
       var bounds = new Array();
       for (var i=0; i < this.features.markers.length; i++) {
         var latLng = new L.LatLng(this.features.markers[i].lat, this.features.markers[i].lon);
+        var mymarker = this.features.markers[i];
         bounds[i] = latLng;
-        var marker = new L.Marker(latLng);
-        map.addLayer(marker);        
-        if (this.features.markers[i].popup) {
-          marker.bindPopup(this.features.markers[i].popup);          
+        if (mymarker.icon) {
+          var icon = new L.Icon(mymarker.icon.iconUrl);
+          icon.iconSize = new L.Point(mymarker.icon.iconSize['x'], mymarker.icon.iconSize['y']);
+          icon.iconAnchor = new L.Point(mymarker.icon.iconAnchor['x'], mymarker.icon.iconAnchor['y']);
+          icon.popupAnchor = new L.Point(mymarker.icon.popupAnchor['x'], mymarker.icon.popupAnchor['y']);
+          icon.shadowUrl = mymarker.icon.shadowUrl;
+          var marker = new L.Marker(latLng, {icon: icon});
+        }
+        else {
+          var marker = new L.Marker(latLng);
+        }
+
+        map.addLayer(marker);
+        if (mymarker.popup) {
+          marker.bindPopup(mymarker.popup);
         }
       };
       
@@ -56,3 +68,4 @@ Drupal.behaviors.leaflet = {
     });
   }
 };
+
