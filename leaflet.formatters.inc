@@ -78,6 +78,14 @@ function leaflet_field_formatter_view($entity_type, $entity, $field, $instance, 
           'popup' => $entity->title
         );
       }
+      
+      // if only a single point, set the center point of the map
+      if (count($markers) == 1) {
+        $map['center'] = array(
+          'lat' => $markers[0]['lat'],
+          'lon' => $markers[0]['lon'],
+        );
+      }
       $element[0] = array('#markup' => leaflet_render_map($map, array('markers' => $markers)));
       return $element;
   }
