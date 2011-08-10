@@ -11,16 +11,22 @@ Drupal.behaviors.leaflet = {
       var map = new L.Map(this.mapId, settings);
 
       // add map layers
-      var layers = new Array();
-      for (layer in this.map.layers) {
+      var layers = new Object();
+      var i = 0;
+      for (var layer in this.map.layers) {
         map_layer = new L.TileLayer(this.map.layers[layer].urlTemplate);
         if (this.map.layers[layer].options) {
           for (option in this.map.layers[layer].options) {
              map_layer.options[option] = this.map.layers[layer].options[option];
            }          
-        }
-        map.addLayer(map_layer);        
+        }      
         layers[layer] = map_layer;
+      
+        // add the first layer to the map
+        if (i == 0) {
+          map.addLayer(map_layer);          
+        }
+        i++;        
       }
       
       // add layer switcher
