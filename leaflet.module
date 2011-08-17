@@ -45,7 +45,12 @@ function leaflet_library() {
     'website' => 'http://leaflet.cloudmade.com',
     'version' => '0.2.1',
     'js' => array(
-      libraries_get_path('leaflet') . '/dist/leaflet.js' => array(),
+      array(
+        'type' => 'file',
+        'data' => libraries_get_path('leaflet') . '/dist/leaflet.js',
+        'group' => JS_LIBRARY,
+        'preprocess' => FALSE
+      ),
     ),
     'css' => array(
       libraries_get_path('leaflet') . '/dist/leaflet.css' => array(
