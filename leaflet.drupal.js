@@ -1,29 +1,33 @@
 Drupal.behaviors.leaflet = {
   attach: function (context, settings) {
+		// declare at this level to these vars are accessable to functions
+    var bounds, map;
+
     jQuery(settings.leaflet).each(function() {
       // load a settings object with all of our map settings
-      var settings = new Object();
-      for (setting in this.map.settings) {
+      var settings = {};
+      for (var setting in this.map.settings) {
         settings[setting] = this.map.settings[setting];
       }
       
       // instantiate our new map
-      var map = new L.Map(this.mapId, settings);
+      map = new L.Map(this.mapId, settings);
 
       // add map layers
-      var layers = new Object();
+      var layers = {};
       var i = 0;
-      for (var layer in this.map.layers) {
-        map_layer = new L.TileLayer(this.map.layers[layer].urlTemplate);
-        if (this.map.layers[layer].options) {
-          for (option in this.map.layers[layer].options) {
-             map_layer.options[option] = this.map.layers[layer].options[option];
+      for (var key in this.map.layers) {
+				var layer = this.map.layers[key];
+        var map_layer = new L.TileLayer(layer.urlTemplate);
+        if (layer.options) {
+          for (var option in layer.options) {
+             map_layer.options[option] = layer.options[option];
            }          
-        }      
+        }
         layers[layer] = map_layer;
       
         // add the first layer to the map
-        if (i == 0) {
+        if (i === 0) {
           map.addLayer(map_layer);          
         }
         i++;        
@@ -34,30 +38,23 @@ Drupal.behaviors.leaflet = {
         map.addControl(new L.Control.Layers(layers));
       }
       
-      // add features
-      var bounds = new Array();
-      for (var i=0; i < this.features.markers.length; i++) {
-        var latLng = new L.LatLng(this.features.markers[i].lat, this.features.markers[i].lon);
-        var mymarker = this.features.markers[i];
-        bounds[i] = latLng;
-        if (mymarker.icon) {
-          var icon = new L.Icon(mymarker.icon.iconUrl);
-          icon.iconSize = new L.Point(mymarker.icon.iconSize['x'], mymarker.icon.iconSize['y']);
-          icon.iconAnchor = new L.Point(mymarker.icon.iconAnchor['x'], mymarker.icon.iconAnchor['y']);
-          icon.popupAnchor = new L.Point(mymarker.icon.popupAnchor['x'], mymarker.icon.popupAnchor['y']);
-          icon.shadowUrl = mymarker.icon.shadowUrl;
-          var marker = new L.Marker(latLng, {icon: icon});
-        }
-        else {
-          var marker = new L.Marker(latLng);
-        }
+      // add markers
+			bounds = []; // bounds is used to fit the map to all points
+      for (var i=0; i < this.features.length; i++) {
+        var feature = this.features[i];
+				switch(feature.type) {
+					case 'point':
+						leaflet_add_point(feature);
+						break;
+					case 'linestring':
+						leaflet_add_linestring(feature);
+						break;
+					case 'polygon':
+						leaflet_add_polygon(feature);
+						break;
+				}
+      }
 
-        map.addLayer(marker);
-        if (mymarker.popup) {
-          marker.bindPopup(mymarker.popup);
-        }
-      };
-      
       // either center the map or set to bounds
       if (this.map.center) {
         map.setView(new L.LatLng(this.map.center.lat, this.map.center.lon), this.map.settings.zoom);
@@ -67,11 +64,55 @@ Drupal.behaviors.leaflet = {
       }
 
       // add attribution
-      if (this.map.settings.attributionControl) {
+      if (this.map.settings.attributionControl && this.map.attribution) {
         map.attributionControl.setPrefix(this.map.attribution.prefix);
         map.attributionControl.addAttribution(this.map.attribution.text);
       }
     });
+
+		function leaflet_add_point(marker) {
+      var latLng = new L.LatLng(marker.lat, marker.lon);
+      bounds.push(latLng);
+			var lMarker;
+      if (marker.icon) {
+        var icon = new L.Icon(marker.icon.iconUrl);
+        icon.iconSize = new L.Point(marker.icon.iconSize.x, marker.icon.iconSize.y);
+        icon.iconAnchor = new L.Point(marker.icon.iconAnchor.x, marker.icon.iconAnchor.y);
+        icon.popupAnchor = new L.Point(marker.icon.popupAnchor.x, marker.icon.popupAnchor.y);
+        icon.shadowUrl = marker.icon.shadowUrl;
+        lMarker = new L.Marker(latLng, {icon: icon});
+      }
+      else {
+        lMarker = new L.Marker(latLng);
+      }
+
+      map.addLayer(lMarker);
+      if (marker.popup) {
+        lMarker.bindPopup(marker.popup);
+      }			
+		}
+		
+		function leaflet_add_linestring(polyline) {
+			var latlngs = [];
+			for (var i=0; i < polyline.points.length; i++) {
+				var latlng = new L.LatLng(polyline.points[i].lat, polyline.points[i].lon);
+        latlngs.push(latlng);
+        bounds.push(latlng);
+			}
+			var lPolyline = new L.Polyline(latlngs);
+			map.addLayer(lPolyline);
+		}
+		
+		function leaflet_add_polygon(polygon) {
+			var latlngs = [];
+			for (var i=0; i < polygon.points.length; i++) {
+				var latlng = new L.LatLng(polygon.points[i].lat, polygon.points[i].lon);
+        latlngs.push(latlng);
+        bounds.push(latlng);
+			}
+			var lPolygon = new L.Polygon(latlngs);
+			map.addLayer(lPolygon);
+		}
   }
 };
 

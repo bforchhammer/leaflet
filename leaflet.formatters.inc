@@ -70,25 +70,67 @@ function leaflet_field_formatter_view($entity_type, $entity, $field, $instance, 
   switch ($display['type']) {
     case 'geofield_leaflet':
       $map = leaflet_map_get_info($settings['leaflet_map']);
-      $markers = array();
-      foreach($items as $item) {
-        $markers[] = array(
-          'lat' => $item['lat'],
-          'lon' => $item['lon'],
-          'popup' => $entity->title
-        );
+
+			$features = leaflet_process_points($items);
+			
+      // if only a single feature, set the center point of the map
+      if (count($items) == 1) {
+        $features[0]['popup'] = $entity->title;
       }
-      
-      // if only a single point, set the center point of the map
-      if (count($markers) == 1) {
-        $map['center'] = array(
-          'lat' => $markers[0]['lat'],
-          'lon' => $markers[0]['lon'],
+
+      $element[0] = array('#markup' => leaflet_render_map($map, $features));
+
+			break;
+  }
+	
+  return $element;
+}
+
+function leaflet_process_points($items = array()) {
+  $data = array();
+
+  geofield_load_geophp();
+
+  foreach ($items as $delta => $item) {
+		$datum = array('type' => $item['geo_type']);
+    switch ($item['geo_type']) {
+      case 'point':
+        $datum += array(
+          'lat' => (float)$item['lat'],
+          'lon' => (float)$item['lon'],
         );
-      }
-      $element[0] = array('#markup' => leaflet_render_map($map, array('markers' => $markers)));
-      return $element;
+
+        $data[] = $datum;
+      break;
+      case 'linestring':
+        $geom = geoPHP::load($item['wkt'], 'wkt');
+        $components = $geom->getComponents();
+
+        foreach ($components as $component) {
+          $datum['points'][] = array(
+            'lat' => $component->getY(),
+            'lon' => $component->getX(),
+          );
+        }
+
+        $data[] = $datum;
+      break;
+      case 'polygon':
+        $geom = geoPHP::load($item['wkt'], 'wkt');
+        $tmp = $geom->getComponents();
+        $components = $tmp[0]->getComponents();
+
+        foreach ($components as $component) {
+          $datum['points'][] = array(
+            'lat' => $component->getY(),
+            'lon' => $component->getX(),
+          );
+        }
+
+        $data[] = $datum;
+      break;
+    }
   }
 
-  return $element;
+  return $data;
 }
