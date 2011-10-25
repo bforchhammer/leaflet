@@ -42,17 +42,23 @@ Drupal.behaviors.leaflet = {
 			bounds = []; // bounds is used to fit the map to all points
       for (var i=0; i < this.features.length; i++) {
         var feature = this.features[i];
+				var lFeature;
 				switch(feature.type) {
 					case 'point':
-						leaflet_add_point(feature);
+						lFeature = leaflet_create_point(feature);
 						break;
 					case 'linestring':
-						leaflet_add_linestring(feature);
+						lFeature = leaflet_create_linestring(feature);
 						break;
 					case 'polygon':
-						leaflet_add_polygon(feature);
+						lFeature = leaflet_create_polygon(feature);
 						break;
 				}
+				
+	      map.addLayer(lFeature);
+	      if (feature.popup) {
+	        lFeature.bindPopup(feature.popup);
+	      }				
       }
 
       // either center the map or set to bounds
@@ -70,7 +76,7 @@ Drupal.behaviors.leaflet = {
       }
     });
 
-		function leaflet_add_point(marker) {
+		function leaflet_create_point(marker) {
       var latLng = new L.LatLng(marker.lat, marker.lon);
       bounds.push(latLng);
 			var lMarker;
@@ -86,33 +92,27 @@ Drupal.behaviors.leaflet = {
         lMarker = new L.Marker(latLng);
       }
 
-      map.addLayer(lMarker);
-      if (marker.popup) {
-        lMarker.bindPopup(marker.popup);
-      }			
+      return lMarker;		
 		}
 		
-		function leaflet_add_linestring(polyline) {
+		function leaflet_create_linestring(polyline) {
 			var latlngs = [];
 			for (var i=0; i < polyline.points.length; i++) {
 				var latlng = new L.LatLng(polyline.points[i].lat, polyline.points[i].lon);
         latlngs.push(latlng);
         bounds.push(latlng);
 			}
-			var lPolyline = new L.Polyline(latlngs);
-			map.addLayer(lPolyline);
+			return new L.Polyline(latlngs);			
 		}
 		
-		function leaflet_add_polygon(polygon) {
+		function leaflet_create_polygon(polygon) {
 			var latlngs = [];
 			for (var i=0; i < polygon.points.length; i++) {
 				var latlng = new L.LatLng(polygon.points[i].lat, polygon.points[i].lon);
         latlngs.push(latlng);
         bounds.push(latlng);
 			}
-			var lPolygon = new L.Polygon(latlngs);
-			map.addLayer(lPolygon);
+			return new L.Polygon(latlngs);
 		}
   }
 };
-
