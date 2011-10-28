@@ -129,6 +129,24 @@ function leaflet_process_points($items = array()) {
 
         $data[] = $datum;
       break;
+      case 'multipolygon':
+        $geom = geoPHP::load($item['wkt'], 'wkt');
+        $tmp = $geom->getComponents();
+        $components = $tmp[0]->getComponents();
+
+        foreach ($components as $key => $component) {
+          $subcomponents = $component->getComponents();
+          foreach ($subcomponents as $subcomponent) {
+            $datum['polygons'][$key]['points'][] = array(
+              'lat' => $subcomponent->getY(),
+              'lon' => $subcomponent->getX(),
+            );
+          }
+          unset($subcomponent);
+        }
+
+        $data[] = $datum;
+      break;
     }
   }
 

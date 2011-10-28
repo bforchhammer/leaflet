@@ -53,14 +53,17 @@ Drupal.behaviors.leaflet = {
 					case 'polygon':
 						lFeature = leaflet_create_polygon(feature);
 						break;
+          case 'multipolygon':
+            lFeature = leaflet_create_multipolygon(feature);
+            break;
 				}
-				
+
 	      map.addLayer(lFeature);
 	      if (feature.popup) {
 	        lFeature.bindPopup(feature.popup);
 	      }				
       }
-
+console.log(bounds);
       // either center the map or set to bounds
       if (this.map.center) {
         map.setView(new L.LatLng(this.map.center.lat, this.map.center.lon), this.map.settings.zoom);
@@ -114,5 +117,20 @@ Drupal.behaviors.leaflet = {
 			}
 			return new L.Polygon(latlngs);
 		}
+
+    function leaflet_create_multipolygon(multipolygon) {
+      var polygons = [];
+      for (var x=0; x < multipolygon.polygons.length; x++) {
+        var latlngs = [];
+        var polygon = multipolygon.polygons[x];
+        for (var i=0; i < polygon.points.length; i++) {
+          var latlng = new L.LatLng(polygon.points[i].lat, polygon.points[i].lon);
+          latlngs.push(latlng);
+          bounds.push(latlng);
+        }
+        polygons.push(latlngs);
+      }
+      return new L.MultiPolygon(polygons);
+    }
   }
 };
