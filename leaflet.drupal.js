@@ -24,7 +24,7 @@ Drupal.behaviors.leaflet = {
              map_layer.options[option] = layer.options[option];
            }          
         }
-        layers[layer] = map_layer;
+        layers[key] = map_layer;
       
         // add the first layer to the map
         if (i === 0) {
@@ -32,7 +32,7 @@ Drupal.behaviors.leaflet = {
         }
         i++;        
       }
-      
+
       // add layer switcher
       if (this.map.settings.layerControl) {
         map.addControl(new L.Control.Layers(layers));
@@ -61,9 +61,9 @@ Drupal.behaviors.leaflet = {
 	      map.addLayer(lFeature);
 	      if (feature.popup) {
 	        lFeature.bindPopup(feature.popup);
-	      }				
+	      }	
       }
-console.log(bounds);
+
       // either center the map or set to bounds
       if (this.map.center) {
         map.setView(new L.LatLng(this.map.center.lat, this.map.center.lon), this.map.settings.zoom);
