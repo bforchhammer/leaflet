@@ -71,8 +71,8 @@ function leaflet_field_formatter_view($entity_type, $entity, $field, $instance, 
     case 'geofield_leaflet':
       $map = leaflet_map_get_info($settings['leaflet_map']);
 
-			$features = leaflet_process_points($items);
-			
+			$features = leaflet_process_geofield($items);
+
       // if only a single feature, set the center point of the map
       if (count($items) == 1) {
         $features[0]['popup'] = $entity->title;
@@ -86,7 +86,15 @@ function leaflet_field_formatter_view($entity_type, $entity, $field, $instance, 
   return $element;
 }
 
-function leaflet_process_points($items = array()) {
+/**
+ * Convert a geofield into an array of map points for consumption by the
+ * leaflet module as expected by leaflet_render_map().
+ *
+ * @param array $items
+ *   A collection of geofield values.
+ * @return array
+ */
+function leaflet_process_geofield($items = array()) {
   $data = array();
 
   geofield_load_geophp();
