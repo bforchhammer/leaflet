@@ -92,6 +92,10 @@ function leaflet_process_points($items = array()) {
   geofield_load_geophp();
 
   foreach ($items as $delta => $item) {
+    // translate linestring to polyline
+    if ($item['geo_type'] == 'multilinestring') {
+      $item['geo_type'] = 'multipolyline';
+    }
 		$datum = array('type' => $item['geo_type']);
     switch ($item['geo_type']) {
       case 'point':
@@ -130,14 +134,21 @@ function leaflet_process_points($items = array()) {
         $data[] = $datum;
       break;
       case 'multipolygon':
+      case 'multipolyline':
         $geom = geoPHP::load($item['wkt'], 'wkt');
-        $tmp = $geom->getComponents();
-        $components = $tmp[0]->getComponents();
+
+        if ($item['geo_type'] == 'multipolyline') {
+          $components = $geom->getComponents();
+        }
+        else {
+          $tmp = $geom->getComponents();
+          $components = $tmp[0]->getComponents();
+        }
 
         foreach ($components as $key => $component) {
           $subcomponents = $component->getComponents();
           foreach ($subcomponents as $subcomponent) {
-            $datum['polygons'][$key]['points'][] = array(
+            $datum['component'][$key]['points'][] = array(
               'lat' => $subcomponent->getY(),
               'lon' => $subcomponent->getX(),
             );

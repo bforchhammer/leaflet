@@ -54,9 +54,12 @@ Drupal.behaviors.leaflet = {
 						lFeature = leaflet_create_polygon(feature);
 						break;
           case 'multipolygon':
-            lFeature = leaflet_create_multipolygon(feature);
+            lFeature = leaflet_create_multipoly(feature);
             break;
-				}
+          case 'multipolyline':
+            lFeature = leaflet_create_multipoly(feature);
+            break;
+        }
 
 	      map.addLayer(lFeature);
 	      if (feature.popup) {
@@ -118,11 +121,11 @@ Drupal.behaviors.leaflet = {
 			return new L.Polygon(latlngs);
 		}
 
-    function leaflet_create_multipolygon(multipolygon) {
+    function leaflet_create_multipoly(multipoly) {
       var polygons = [];
-      for (var x=0; x < multipolygon.polygons.length; x++) {
+      for (var x=0; x < multipoly.component.length; x++) {
         var latlngs = [];
-        var polygon = multipolygon.polygons[x];
+        var polygon = multipoly.component[x];
         for (var i=0; i < polygon.points.length; i++) {
           var latlng = new L.LatLng(polygon.points[i].lat, polygon.points[i].lon);
           latlngs.push(latlng);
