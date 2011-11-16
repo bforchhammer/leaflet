@@ -3,17 +3,18 @@
 Drupal.behaviors.leaflet = {
   attach: function (context, settings) {
 		// declare at this level to these vars are accessable to functions
-    var bounds, map;
+    var bounds;
 
     $(settings.leaflet).each(function() {
       // load a settings object with all of our map settings
       var settings = {};
+      var lMap = {};
       for (var setting in this.map.settings) {
         settings[setting] = this.map.settings[setting];
       }
       
       // instantiate our new map
-      map = new L.Map(this.mapId, settings);
+      lMap = new L.Map(this.mapId, settings);
 
       // add map layers
       var layers = {};
@@ -30,7 +31,7 @@ Drupal.behaviors.leaflet = {
 
         // layers served from TileStream need this correction in the y coordinates
         // TODO: Need to explore this more and find a more elegant solution
-        if (layer.isTileStream) {
+        if (layer.type == 'tilestream') {
           map_layer.getTileUrl = function(tilePoint, zoom){
             var subdomains = this.options.subdomains,
               s = this.options.subdomains[(tilePoint.x + tilePoint.y) % subdomains.length];
@@ -39,19 +40,19 @@ Drupal.behaviors.leaflet = {
               .replace('{z}', zoom)
               .replace('{x}', tilePoint.x)
               .replace('{y}', Math.pow(2,zoom) - tilePoint.y -1);
-          };
+          }
         }
 
         // add the first layer to the map
         if (i === 0) {
-          map.addLayer(map_layer);          
+          lMap.addLayer(map_layer);
         }
         i++;        
       }
 
       // add layer switcher
       if (this.map.settings.layerControl) {
-        map.addControl(new L.Control.Layers(layers));
+        lMap.addControl(new L.Control.Layers(layers));
       }
       
       // add markers
@@ -77,7 +78,7 @@ Drupal.behaviors.leaflet = {
             break;
         }
 
-	      map.addLayer(lFeature);
+        lMap.addLayer(lFeature);
 	      if (feature.popup) {
 	        lFeature.bindPopup(feature.popup);
 	      }	
@@ -85,19 +86,19 @@ Drupal.behaviors.leaflet = {
 
       // either center the map or set to bounds
       if (this.map.center) {
-        map.setView(new L.LatLng(this.map.center.lat, this.map.center.lon), this.map.settings.zoom);
+        lMap.setView(new L.LatLng(this.map.center.lat, this.map.center.lon), this.map.settings.zoom);
       }
       else {
-        map.fitBounds(new L.LatLngBounds(bounds));        
+        lMap.fitBounds(new L.LatLngBounds(bounds));
       }
 
       // add attribution
       if (this.map.settings.attributionControl && this.map.attribution) {
-        map.attributionControl.setPrefix(this.map.attribution.prefix);
-        map.attributionControl.addAttribution(this.map.attribution.text);
+        lMap.attributionControl.setPrefix(this.map.attribution.prefix);
+        lMap.attributionControl.addAttribution(this.map.attribution.text);
       }
 
-      this.lMap = map;
+      this.lMap = lMap;
     });
 
 		function leaflet_create_point(marker) {
