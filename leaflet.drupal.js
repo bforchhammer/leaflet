@@ -1,9 +1,11 @@
+(function($) {
+
 Drupal.behaviors.leaflet = {
   attach: function (context, settings) {
 		// declare at this level to these vars are accessable to functions
     var bounds, map;
 
-    jQuery(settings.leaflet).each(function() {
+    $(settings.leaflet).each(function() {
       // load a settings object with all of our map settings
       var settings = {};
       for (var setting in this.map.settings) {
@@ -25,7 +27,21 @@ Drupal.behaviors.leaflet = {
            }          
         }
         layers[key] = map_layer;
-      
+
+        // layers served from TileStream need this correction in the y coordinates
+        // TODO: Need to explore this more and find a more elegant solution
+        if (layer.isTileStream) {
+          map_layer.getTileUrl = function(tilePoint, zoom){
+            var subdomains = this.options.subdomains,
+              s = this.options.subdomains[(tilePoint.x + tilePoint.y) % subdomains.length];
+
+            return this._url
+              .replace('{z}', zoom)
+              .replace('{x}', tilePoint.x)
+              .replace('{y}', Math.pow(2,zoom) - tilePoint.y -1);
+          };
+        }
+
         // add the first layer to the map
         if (i === 0) {
           map.addLayer(map_layer);          
@@ -80,6 +96,8 @@ Drupal.behaviors.leaflet = {
         map.attributionControl.setPrefix(this.map.attribution.prefix);
         map.attributionControl.addAttribution(this.map.attribution.text);
       }
+
+      this.lMap = map;
     });
 
 		function leaflet_create_point(marker) {
@@ -137,3 +155,5 @@ Drupal.behaviors.leaflet = {
     }
   }
 };
+
+})(jQuery);
