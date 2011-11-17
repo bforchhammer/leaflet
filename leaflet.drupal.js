@@ -2,13 +2,12 @@
 
 Drupal.behaviors.leaflet = {
   attach: function (context, settings) {
-		// declare at this level to these vars are accessable to functions
-    var bounds;
 
     $(settings.leaflet).each(function() {
       // load a settings object with all of our map settings
       var settings = {};
       var lMap = {};
+      var bounds = [];
       for (var setting in this.map.settings) {
         settings[setting] = this.map.settings[setting];
       }
@@ -56,29 +55,27 @@ Drupal.behaviors.leaflet = {
       }
       
       // add markers
-			bounds = []; // bounds is used to fit the map to all points
       for (var i=0; i < this.features.length; i++) {
         var feature = this.features[i];
 				var lFeature;
 				switch(feature.type) {
 					case 'point':
-						lFeature = leaflet_create_point(feature);
+						lFeature = leaflet_create_point(feature, bounds);
 						break;
 					case 'linestring':
-						lFeature = leaflet_create_linestring(feature);
+						lFeature = leaflet_create_linestring(feature, bounds);
 						break;
 					case 'polygon':
-						lFeature = leaflet_create_polygon(feature);
+						lFeature = leaflet_create_polygon(feature, bounds);
 						break;
           case 'multipolygon':
-            lFeature = leaflet_create_multipoly(feature);
-            break;
           case 'multipolyline':
-            lFeature = leaflet_create_multipoly(feature);
+            lFeature = leaflet_create_multipoly(feature, bounds);
             break;
         }
 
         lMap.addLayer(lFeature);
+
 	      if (feature.popup) {
 	        lFeature.bindPopup(feature.popup);
 	      }	
@@ -98,10 +95,11 @@ Drupal.behaviors.leaflet = {
         lMap.attributionControl.addAttribution(this.map.attribution.text);
       }
 
+      // add the leaflet map to our settings object to make it accessible
       this.lMap = lMap;
     });
 
-		function leaflet_create_point(marker) {
+		function leaflet_create_point(marker, bounds) {
       var latLng = new L.LatLng(marker.lat, marker.lon);
       bounds.push(latLng);
 			var lMarker;
@@ -116,11 +114,10 @@ Drupal.behaviors.leaflet = {
       else {
         lMarker = new L.Marker(latLng);
       }
-
       return lMarker;		
 		}
 		
-		function leaflet_create_linestring(polyline) {
+		function leaflet_create_linestring(polyline, bounds) {
 			var latlngs = [];
 			for (var i=0; i < polyline.points.length; i++) {
 				var latlng = new L.LatLng(polyline.points[i].lat, polyline.points[i].lon);
@@ -130,7 +127,7 @@ Drupal.behaviors.leaflet = {
 			return new L.Polyline(latlngs);			
 		}
 		
-		function leaflet_create_polygon(polygon) {
+		function leaflet_create_polygon(polygon, bounds) {
 			var latlngs = [];
 			for (var i=0; i < polygon.points.length; i++) {
 				var latlng = new L.LatLng(polygon.points[i].lat, polygon.points[i].lon);
@@ -140,7 +137,7 @@ Drupal.behaviors.leaflet = {
 			return new L.Polygon(latlngs);
 		}
 
-    function leaflet_create_multipoly(multipoly) {
+    function leaflet_create_multipoly(multipoly, bounds) {
       var polygons = [];
       for (var x=0; x < multipoly.component.length; x++) {
         var latlngs = [];
