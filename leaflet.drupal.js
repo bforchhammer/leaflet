@@ -78,7 +78,7 @@ Drupal.behaviors.leaflet = {
 
 	      if (feature.popup) {
 	        lFeature.bindPopup(feature.popup);
-	      }	
+	      }
       }
 
       // either center the map or set to bounds
@@ -105,10 +105,20 @@ Drupal.behaviors.leaflet = {
 			var lMarker;
       if (marker.icon) {
         var icon = new L.Icon(marker.icon.iconUrl);
-        icon.iconSize = new L.Point(marker.icon.iconSize.x, marker.icon.iconSize.y);
-        icon.iconAnchor = new L.Point(marker.icon.iconAnchor.x, marker.icon.iconAnchor.y);
-        icon.popupAnchor = new L.Point(marker.icon.popupAnchor.x, marker.icon.popupAnchor.y);
-        icon.shadowUrl = marker.icon.shadowUrl;
+
+        // override applicable marker defaults
+        if (marker.icon.iconSize) {
+          icon.iconSize = new L.Point(marker.icon.iconSize.x, marker.icon.iconSize.y);
+        }
+        if (marker.icon.iconAnchor) {
+          icon.iconAnchor = new L.Point(marker.icon.iconAnchor.x, marker.icon.iconAnchor.y);
+        }
+        if (marker.icon.popupAnchor) {
+          icon.popupAnchor = new L.Point(marker.icon.popupAnchor.x, marker.icon.popupAnchor.y);
+        }
+        if (marker.icon.shadowUrl) {
+          icon.shadowUrl = marker.icon.shadowUrl;
+        }
         lMarker = new L.Marker(latLng, {icon: icon});
       }
       else {
