@@ -119,6 +119,10 @@ Drupal.behaviors.leaflet = {
         if (marker.icon.shadowUrl) {
           icon.shadowUrl = marker.icon.shadowUrl;
         }
+        if (marker.icon.shadowSize) {
+          icon.shadowSize = new L.Point(marker.icon.shadowSize.x, marker.icon.shadowSize.y);
+        }
+
         lMarker = new L.Marker(latLng, {icon: icon});
       }
       else {
