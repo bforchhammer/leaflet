@@ -17,7 +17,6 @@ Drupal.behaviors.leaflet = {
 
       // add map layers
       var layers = {};
-      var i = 0;
       for (var key in this.map.layers) {
 				var layer = this.map.layers[key];
         var map_layer = new L.TileLayer(layer.urlTemplate);
@@ -27,6 +26,7 @@ Drupal.behaviors.leaflet = {
            }          
         }
         layers[key] = map_layer;
+        map_layer._leaflet_id = key;
 
         // layers served from TileStream need this correction in the y coordinates
         // TODO: Need to explore this more and find a more elegant solution
@@ -42,11 +42,8 @@ Drupal.behaviors.leaflet = {
           }
         }
 
-        // add the first layer to the map
-        if (i === 0) {
-          lMap.addLayer(map_layer);
-        }
-        i++;        
+        // add the  layer to the map
+        lMap.addLayer(map_layer);
       }
 
       // add layer switcher
@@ -72,6 +69,11 @@ Drupal.behaviors.leaflet = {
           case 'multipolyline':
             lFeature = leaflet_create_multipoly(feature, bounds);
             break;
+        }
+
+        // assign our given unique ID, useful for associating nodes
+        if (feature.leaflet_id) {
+          lFeature._leaflet_id = feature.leaflet_id;
         }
 
         lMap.addLayer(lFeature);
