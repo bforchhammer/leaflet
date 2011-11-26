@@ -17,33 +17,17 @@ Drupal.behaviors.leaflet = {
 
       // add map layers
       var layers = {};
+      var i = 0;
       for (var key in this.map.layers) {
 				var layer = this.map.layers[key];
-        var map_layer = new L.TileLayer(layer.urlTemplate);
-        if (layer.options) {
-          for (var option in layer.options) {
-             map_layer.options[option] = layer.options[option];
-           }          
-        }
+        var map_layer = leaflet_create_layer(layer, key);
         layers[key] = map_layer;
-        map_layer._leaflet_id = key;
-
-        // layers served from TileStream need this correction in the y coordinates
-        // TODO: Need to explore this more and find a more elegant solution
-        if (layer.type == 'tilestream') {
-          map_layer.getTileUrl = function(tilePoint, zoom){
-            var subdomains = this.options.subdomains,
-              s = this.options.subdomains[(tilePoint.x + tilePoint.y) % subdomains.length];
-
-            return this._url
-              .replace('{z}', zoom)
-              .replace('{x}', tilePoint.x)
-              .replace('{y}', Math.pow(2,zoom) - tilePoint.y -1);
-          }
-        }
 
         // add the  layer to the map
-        lMap.addLayer(map_layer);
+        if (i == 0) {
+          lMap.addLayer(map_layer);
+        }
+        i++;
       }
 
       // add layer switcher
@@ -166,6 +150,33 @@ Drupal.behaviors.leaflet = {
         polygons.push(latlngs);
       }
       return new L.MultiPolygon(polygons);
+    }
+
+    function leaflet_create_layer(layer, key) {
+      var map_layer = new L.TileLayer(layer.urlTemplate);
+      map_layer._leaflet_id = key;
+
+      if (layer.options) {
+        for (var option in layer.options) {
+           map_layer.options[option] = layer.options[option];
+         }
+      }
+
+      // layers served from TileStream need this correction in the y coordinates
+      // TODO: Need to explore this more and find a more elegant solution
+      if (layer.type == 'tilestream') {
+        map_layer.getTileUrl = function(tilePoint, zoom){
+          var subdomains = this.options.subdomains,
+            s = this.options.subdomains[(tilePoint.x + tilePoint.y) % subdomains.length];
+
+          return this._url
+            .replace('{z}', zoom)
+            .replace('{x}', tilePoint.x)
+            .replace('{y}', Math.pow(2,zoom) - tilePoint.y -1);
+        }
+      }
+
+      return map_layer;
     }
   }
 };
