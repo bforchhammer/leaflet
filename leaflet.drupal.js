@@ -6,21 +6,21 @@ Drupal.behaviors.leaflet = {
     $(settings.leaflet).each(function() {
       // load a settings object with all of our map settings
       var settings = {};
-      var lMap = {};
       var bounds = [];
       for (var setting in this.map.settings) {
         settings[setting] = this.map.settings[setting];
       }
       
       // instantiate our new map
-      lMap = new L.Map(this.mapId, settings);
+      var lMap = new L.Map(this.mapId, settings);
 
       // add map layers
       var layers = {};
       var i = 0;
       for (var key in this.map.layers) {
 				var layer = this.map.layers[key];
-        var map_layer = leaflet_create_layer(layer, key);
+        var map_layer = Drupal.leaflet.create_layer(layer, key);
+
         layers[key] = map_layer;
 
         // add the  layer to the map
@@ -36,7 +36,7 @@ Drupal.behaviors.leaflet = {
       }
       
       // add markers
-      for (var i=0; i < this.features.length; i++) {
+      for (i = 0; i < this.features.length; i++) {
         var feature = this.features[i];
 				var lFeature;
 				switch(feature.type) {
@@ -151,34 +151,38 @@ Drupal.behaviors.leaflet = {
       }
       return new L.MultiPolygon(polygons);
     }
-
-    function leaflet_create_layer(layer, key) {
-      var map_layer = new L.TileLayer(layer.urlTemplate);
-      map_layer._leaflet_id = key;
-
-      if (layer.options) {
-        for (var option in layer.options) {
-           map_layer.options[option] = layer.options[option];
-         }
-      }
-
-      // layers served from TileStream need this correction in the y coordinates
-      // TODO: Need to explore this more and find a more elegant solution
-      if (layer.type == 'tilestream') {
-        map_layer.getTileUrl = function(tilePoint, zoom){
-          var subdomains = this.options.subdomains,
-            s = this.options.subdomains[(tilePoint.x + tilePoint.y) % subdomains.length];
-
-          return this._url
-            .replace('{z}', zoom)
-            .replace('{x}', tilePoint.x)
-            .replace('{y}', Math.pow(2,zoom) - tilePoint.y -1);
-        }
-      }
-
-      return map_layer;
-    }
   }
+}
+
+Drupal.leaflet = {
+
+  create_layer: function (layer, key) {
+    var map_layer = new L.TileLayer(layer.urlTemplate);
+    map_layer._leaflet_id = key;
+
+    if (layer.options) {
+      for (var option in layer.options) {
+         map_layer.options[option] = layer.options[option];
+       }
+    }
+
+    // layers served from TileStream need this correction in the y coordinates
+    // TODO: Need to explore this more and find a more elegant solution
+    if (layer.type == 'tilestream') {
+      map_layer.getTileUrl = function(tilePoint, zoom){
+        var subdomains = this.options.subdomains,
+          s = this.options.subdomains[(tilePoint.x + tilePoint.y) % subdomains.length];
+
+        return this._url
+          .replace('{z}', zoom)
+          .replace('{x}', tilePoint.x)
+          .replace('{y}', Math.pow(2,zoom) - tilePoint.y -1);
+      }
+    }
+    return map_layer;
+  }
+
 };
+
 
 })(jQuery);
