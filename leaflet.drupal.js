@@ -102,7 +102,7 @@ Drupal.behaviors.leaflet = {
         if (marker.icon.popupAnchor) {
           icon.popupAnchor = new L.Point(marker.icon.popupAnchor.x, marker.icon.popupAnchor.y);
         }
-        if (marker.icon.shadowUrl) {
+        if (marker.icon.shadowUrl !== undefined) {
           icon.shadowUrl = marker.icon.shadowUrl;
         }
         if (marker.icon.shadowSize) {
