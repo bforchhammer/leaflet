@@ -60,6 +60,14 @@ Drupal.behaviors.leaflet = {
           lFeature._leaflet_id = feature.leaflet_id;
         }
 
+        var options = {};
+        if (feature.options) {
+          for (var option in feature.options) {
+            options[option] = feature.options[option];
+          }
+          lFeature.setStyle(options);
+        }
+
         lMap.addLayer(lFeature);
 
 	      if (feature.popup) {
