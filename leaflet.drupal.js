@@ -157,7 +157,12 @@ Drupal.behaviors.leaflet = {
         }
         polygons.push(latlngs);
       }
-      return new L.MultiPolygon(polygons);
+      if (multipoly.multipolyline) {
+        return new L.MultiPolyline(polygons);
+      }
+      else {
+        return new L.MultiPolygon(polygons);
+      }
     }
   }
 }
