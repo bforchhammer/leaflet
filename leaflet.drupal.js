@@ -41,7 +41,7 @@ Drupal.behaviors.leaflet = {
         lMap.addControl(new L.Control.Layers(layers));
       }
       
-      // add markers
+      // add features
       for (i = 0; i < this.features.length; i++) {
         var feature = this.features[i];
 				var lFeature;
@@ -58,6 +58,29 @@ Drupal.behaviors.leaflet = {
           case 'multipolygon':
           case 'multipolyline':
             lFeature = leaflet_create_multipoly(feature, bounds);
+            break;
+          case 'json':
+            lFeature = new L.GeoJSON();
+
+            lFeature.on('featureparse', function(e) {
+              e.layer.bindPopup(e.properties.popup);
+
+              for(var layer_id in e.layer._layers) {
+                for(var i in e.layer._layers[layer_id]._latlngs) {
+                  bounds.push(e.layer._layers[layer_id]._latlngs[i]);
+                }
+              }
+
+              if (e.properties.style) {
+                e.layer.setStyle(e.properties.style);
+              }
+
+              if (e.properties.leaflet_id) {
+                e.layer._leaflet_id = e.properties.leaflet_id;
+              }
+            });
+
+            lFeature.addGeoJSON(feature.json);
             break;
         }
 
