@@ -157,19 +157,19 @@ Drupal.behaviors.leaflet = {
 
         // override applicable marker defaults
         if (marker.icon.iconSize) {
-          icon.iconSize = new L.Point(marker.icon.iconSize.x, marker.icon.iconSize.y);
+          icon.iconSize = new L.Point(parseInt(marker.icon.iconSize.x), parseInt(marker.icon.iconSize.y));
         }
         if (marker.icon.iconAnchor) {
-          icon.iconAnchor = new L.Point(marker.icon.iconAnchor.x, marker.icon.iconAnchor.y);
+          icon.iconAnchor = new L.Point(parseFloat(marker.icon.iconAnchor.x), parseFloat(marker.icon.iconAnchor.y));
         }
         if (marker.icon.popupAnchor) {
-          icon.popupAnchor = new L.Point(marker.icon.popupAnchor.x, marker.icon.popupAnchor.y);
+          icon.popupAnchor = new L.Point(parseFloat(marker.icon.popupAnchor.x), parseFloat(marker.icon.popupAnchor.y));
         }
         if (marker.icon.shadowUrl !== undefined) {
           icon.shadowUrl = marker.icon.shadowUrl;
         }
         if (marker.icon.shadowSize) {
-          icon.shadowSize = new L.Point(marker.icon.shadowSize.x, marker.icon.shadowSize.y);
+          icon.shadowSize = new L.Point(parseInt(marker.icon.shadowSize.x), parseInt(marker.icon.shadowSize.y));
         }
 
         lMarker = new L.Marker(latLng, {icon: icon});
