@@ -97,7 +97,7 @@ function leaflet_field_formatter_settings_form($field, $instance, $view_mode, $f
       '#maxlength' => 3,
       '#size' => 3,
       '#default_value' => isset($settings['icon']['iconAnchor']['x']) ? $settings['icon']['iconAnchor']['x'] : '',
-      '#element_validate' => array('element_validate_integer_positive'),
+      '#element_validate' => array('element_validate_number'),
     );
     $element['icon']['iconAnchor']['y'] = array(
       '#title' => t('Y'),
@@ -105,7 +105,7 @@ function leaflet_field_formatter_settings_form($field, $instance, $view_mode, $f
       '#maxlength' => 3,
       '#size' => 3,
       '#default_value' => isset($settings['icon']['iconAnchor']['y']) ? $settings['icon']['iconAnchor']['y'] : '',
-      '#element_validate' => array('element_validate_integer_positive'),
+      '#element_validate' => array('element_validate_number'),
     );
 
     $element['icon']['popupAnchor'] = array(
@@ -121,7 +121,7 @@ function leaflet_field_formatter_settings_form($field, $instance, $view_mode, $f
       '#maxlength' => 3,
       '#size' => 3,
       '#default_value' => isset($settings['icon']['popupAnchor']['x']) ? $settings['icon']['popupAnchor']['x'] : '',
-      '#element_validate' => array('element_validate_integer_positive'),
+      '#element_validate' => array('element_validate_number'),
     );
     $element['icon']['popupAnchor']['y'] = array(
       '#title' => t('Y'),
@@ -129,7 +129,7 @@ function leaflet_field_formatter_settings_form($field, $instance, $view_mode, $f
       '#maxlength' => 3,
       '#size' => 3,
       '#default_value' => isset($settings['icon']['popupAnchor']['y'])  ?$settings['icon']['popupAnchor']['y'] : '',
-      '#element_validate' => array('element_validate_integer_positive'),
+      '#element_validate' => array('element_validate_number'),
     );
   }
 
