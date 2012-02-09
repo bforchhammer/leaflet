@@ -10,7 +10,7 @@ function leaflet_field_formatter_info() {
     $formatters['geofield_leaflet'] = array(
       'label' => t('Leaflet'),
       'field types' => array('geofield'),
-      'settings' => array('leaflet_map' => '', 'data' => ''),
+      'settings' => array('leaflet_map' => '', 'icon' => ''),
     );
   }
   
@@ -39,9 +39,114 @@ function leaflet_field_formatter_settings_form($field, $instance, $view_mode, $f
       '#default_value' => $settings['leaflet_map'],
       '#required' => TRUE,
     );
+    $element['icon'] = array(
+      '#title' => t('Map Icon'),
+      '#type' => 'fieldset',
+      '#collapsible' => TRUE,
+      '#collapsed' => !isset($settings['icon']['iconUrl']),
+    );
+    $element['icon']['iconUrl'] = array(
+      '#title' => t('Icon URL'),
+      '#description' => t('Can be an absolute or relative URL.'),
+      '#type' => 'textfield',
+      '#maxlength' => 999,
+      '#default_value' => $settings['icon']['iconUrl'],
+      '#element_validate' => array('leaflet_icon_validate')
+    );
+    $element['icon']['shadowUrl'] = array(
+      '#title' => t('Icon Shadow URL'),
+      '#type' => 'textfield',
+      '#maxlength' => 999,
+      '#default_value' => $settings['icon']['shadowUrl'],
+      '#element_validate' => array('leaflet_icon_validate')
+    );
+
+    $element['icon']['iconSize'] = array(
+      '#title' => t('Icon Size'),
+      '#type' => 'fieldset',
+      '#collapsible' => FALSE,
+      '#description' => t('Size of the icon image in pixels.')
+    );
+    $element['icon']['iconSize']['x'] = array(
+      '#title' => t('Width'),
+      '#type' => 'textfield',
+      '#maxlength' => 3,
+      '#size' => 3,
+      '#default_value' => $settings['icon']['iconSize']['x'],
+      '#element_validate' => array('element_validate_integer_positive'),
+    );
+    $element['icon']['iconSize']['y'] = array(
+      '#title' => t('Height'),
+      '#type' => 'textfield',
+      '#maxlength' => 3,
+      '#size' => 3,
+      '#default_value' => $settings['icon']['iconSize']['y'] ,
+      '#element_validate' => array('element_validate_integer_positive'),
+    );
+
+    $element['icon']['iconAnchor'] = array(
+      '#title' => t('Icon Anchor'),
+      '#type' => 'fieldset',
+      '#collapsible' => FALSE,
+      '#description' => t('The coordinates of the "tip" of the icon (relative to
+        its top left corner). The icon will be aligned so that this point is at the marker\'s geographical location.')
+    );
+    $element['icon']['iconAnchor']['x'] = array(
+      '#title' => t('X'),
+      '#type' => 'textfield',
+      '#maxlength' => 3,
+      '#size' => 3,
+      '#default_value' => $settings['icon']['iconAnchor']['x'] ,
+      '#element_validate' => array('element_validate_integer_positive'),
+    );
+    $element['icon']['iconAnchor']['y'] = array(
+      '#title' => t('Y'),
+      '#type' => 'textfield',
+      '#maxlength' => 3,
+      '#size' => 3,
+      '#default_value' => $settings['icon']['iconAnchor']['y'] ,
+      '#element_validate' => array('element_validate_integer_positive'),
+    );
+
+    $element['icon']['popupAnchor'] = array(
+      '#title' => t('Popup Anchor'),
+      '#type' => 'fieldset',
+      '#collapsible' => FALSE,
+      '#description' => t('The point from which the marker popup opens, relative
+        to the anchor point.')
+    );
+    $element['icon']['popupAnchor']['x'] = array(
+      '#title' => t('X'),
+      '#type' => 'textfield',
+      '#maxlength' => 3,
+      '#size' => 3,
+      '#default_value' => $settings['icon']['popupAnchor']['x'] ,
+      '#element_validate' => array('element_validate_integer_positive'),
+    );
+    $element['icon']['popupAnchor']['y'] = array(
+      '#title' => t('Y'),
+      '#type' => 'textfield',
+      '#maxlength' => 3,
+      '#size' => 3,
+      '#default_value' => $settings['icon']['popupAnchor']['y'] ,
+      '#element_validate' => array('element_validate_integer_positive'),
+    );
   }
 
   return $element;
+}
+
+/**
+ * Validation callback for icon urls.
+ *
+ * @param $element
+ * @param $form_state
+ * @param $form
+ */
+function leaflet_icon_validate($element, &$form_state, $form) {
+  if (!empty($element['#value']) && !valid_url($element['#value'])) {
+    form_error($element, t('Icon URL is invalid'));
+  }
 }
 
 /**
@@ -73,9 +178,15 @@ function leaflet_field_formatter_view($entity_type, $entity, $field, $instance, 
 
 			$features = leaflet_process_geofield($items);
 
-      // if only a single feature, set the center point of the map
+      // if only a single feature, set the popup content to the entity title
       if (count($items) == 1) {
-        $features[0]['popup'] = $entity->title;
+        $features[0]['popup'] = entity_label($entity_type, $entity);
+      }
+
+      if (!empty($settings['icon']) && isset($settings['icon']['iconUrl'])) {
+        foreach($features as $key => $feature) {
+          $features[$key]['icon'] = $settings['icon'];
+        }
       }
 
       $element[0] = array('#markup' => leaflet_render_map($map, $features));
