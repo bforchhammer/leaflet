@@ -13,7 +13,7 @@ function leaflet_field_formatter_info() {
       'settings' => array('leaflet_map' => '', 'icon' => ''),
     );
   }
-  
+
   return $formatters;
 }
 
@@ -31,7 +31,7 @@ function leaflet_field_formatter_settings_form($field, $instance, $view_mode, $f
     foreach(leaflet_map_get_info() as $key => $map) {
       $options[$key] = t($map['label']);
     }
-    
+
     $element['leaflet_map'] = array(
       '#title' => t('Leaflet Map'),
       '#type' => 'select',
@@ -176,7 +176,7 @@ function leaflet_field_formatter_view($entity_type, $entity, $field, $instance, 
     case 'geofield_leaflet':
       $map = leaflet_map_get_info($settings['leaflet_map']);
 
-			$features = leaflet_process_geofield($items);
+      $features = leaflet_process_geofield($items);
 
       // if only a single feature, set the popup content to the entity title
       if (count($items) == 1) {
@@ -191,9 +191,9 @@ function leaflet_field_formatter_view($entity_type, $entity, $field, $instance, 
 
       $element[0] = array('#markup' => leaflet_render_map($map, $features));
 
-			break;
+      break;
   }
-	
+
   return $element;
 }
 
@@ -215,7 +215,7 @@ function leaflet_process_geofield($items = array()) {
     if ($item['geo_type'] == 'multilinestring') {
       $item['geo_type'] = 'multipolyline';
     }
-		$datum = array('type' => $item['geo_type']);
+    $datum = array('type' => $item['geo_type']);
     switch ($item['geo_type']) {
       case 'point':
         $datum += array(
