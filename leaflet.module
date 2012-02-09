@@ -47,7 +47,7 @@ function leaflet_library() {
     'js' => array(
       array(
         'type' => 'inline',
-        'data' => 'L_ROOT_URL = "' . libraries_get_path('leaflet') . '/dist/";',
+        'data' => 'L_ROOT_URL = "' . base_path() . libraries_get_path('leaflet') . '/dist/";',
         'group' => JS_LIBRARY,
         'preprocess' => FALSE
       ),
