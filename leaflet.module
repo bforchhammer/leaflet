@@ -79,7 +79,7 @@ function leaflet_library() {
  * @return string map markup
  */
 function leaflet_render_map($map, $features = array(), $height = '400px') {
-  $map_id = 'leaflet_map_' . REQUEST_TIME;
+  $map_id = 'leaflet_map_' . md5(serialize($features) . serialize($features));
   drupal_add_library('leaflet', 'leaflet');
   drupal_add_js(drupal_get_path('module', 'leaflet') . '/leaflet.drupal.js');
   $settings = array(
