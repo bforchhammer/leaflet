@@ -21,7 +21,7 @@ Drupal.behaviors.leaflet = {
       var lMap = new L.Map(this.mapId, settings);
 
       // add map layers
-      var layers = {};
+      var layers = {}, overlays = {};
       var i = 0;
       for (var key in this.map.layers) {
 				var layer = this.map.layers[key];
@@ -36,72 +36,41 @@ Drupal.behaviors.leaflet = {
         i++;
       }
 
-      // add layer switcher
-      if (this.map.settings.layerControl) {
-        lMap.addControl(new L.Control.Layers(layers));
-      }
-      
       // add features
       for (i = 0; i < this.features.length; i++) {
         var feature = this.features[i];
-				var lFeature;
-				switch(feature.type) {
-					case 'point':
-						lFeature = leaflet_create_point(feature, bounds);
-						break;
-					case 'linestring':
-						lFeature = leaflet_create_linestring(feature, bounds);
-						break;
-					case 'polygon':
-						lFeature = leaflet_create_polygon(feature, bounds);
-						break;
-          case 'multipolygon':
-          case 'multipolyline':
-            lFeature = leaflet_create_multipoly(feature, bounds);
-            break;
-          case 'json':
-            lFeature = new L.GeoJSON();
+        var lFeature;
 
-            lFeature.on('featureparse', function(e) {
-              e.layer.bindPopup(e.properties.popup);
-
-              for(var layer_id in e.layer._layers) {
-                for(var i in e.layer._layers[layer_id]._latlngs) {
-                  bounds.push(e.layer._layers[layer_id]._latlngs[i]);
-                }
-              }
-
-              if (e.properties.style) {
-                e.layer.setStyle(e.properties.style);
-              }
-
-              if (e.properties.leaflet_id) {
-                e.layer._leaflet_id = e.properties.leaflet_id;
-              }
-            });
-
-            lFeature.addGeoJSON(feature.json);
-            break;
-        }
-
-        // assign our given unique ID, useful for associating nodes
-        if (feature.leaflet_id) {
-          lFeature._leaflet_id = feature.leaflet_id;
-        }
-
-        var options = {};
-        if (feature.options) {
-          for (var option in feature.options) {
-            options[option] = feature.options[option];
+        // dealing with a layer group
+        if (feature.group) {
+          var lGroup = new L.LayerGroup();
+          for (var groupKey in feature.features) {
+            var groupFeature = feature.features[groupKey];
+            lFeature = leaflet_create_feature(groupFeature, bounds);
+            if (groupFeature.popup) {
+     	        lFeature.bindPopup(groupFeature.popup);
+     	      }
+            lGroup.addLayer(lFeature);
           }
-          lFeature.setStyle(options);
+
+          // add the group to the layer switcher
+          overlays[feature.label] = lGroup;
+
+          lMap.addLayer(lGroup);
         }
+        else {
+          lFeature = leaflet_create_feature(feature, bounds);
+          lMap.addLayer(lFeature);
 
-        lMap.addLayer(lFeature);
+          if (feature.popup) {
+   	        lFeature.bindPopup(feature.popup);
+   	      }
+        }
+      }
 
-	      if (feature.popup) {
-	        lFeature.bindPopup(feature.popup);
-	      }
+      // add layer switcher
+      if (this.map.settings.layerControl) {
+        lMap.addControl(new L.Control.Layers(layers, overlays));
       }
 
       // either center the map or set to bounds
@@ -121,6 +90,63 @@ Drupal.behaviors.leaflet = {
       // add the leaflet map to our settings object to make it accessible
       this.lMap = lMap;
     });
+
+    function leaflet_create_feature(feature, bounds) {
+      var lFeature;
+      switch(feature.type) {
+        case 'point':
+          lFeature = leaflet_create_point(feature, bounds);
+          break;
+        case 'linestring':
+          lFeature = leaflet_create_linestring(feature, bounds);
+          break;
+        case 'polygon':
+          lFeature = leaflet_create_polygon(feature, bounds);
+          break;
+        case 'multipolygon':
+        case 'multipolyline':
+          lFeature = leaflet_create_multipoly(feature, bounds);
+          break;
+        case 'json':
+          lFeature = new L.GeoJSON();
+
+          lFeature.on('featureparse', function(e) {
+            e.layer.bindPopup(e.properties.popup);
+
+            for(var layer_id in e.layer._layers) {
+              for(var i in e.layer._layers[layer_id]._latlngs) {
+                bounds.push(e.layer._layers[layer_id]._latlngs[i]);
+              }
+            }
+
+            if (e.properties.style) {
+              e.layer.setStyle(e.properties.style);
+            }
+
+            if (e.properties.leaflet_id) {
+              e.layer._leaflet_id = e.properties.leaflet_id;
+            }
+          });
+
+          lFeature.addGeoJSON(feature.json);
+          break;
+      }
+
+      // assign our given unique ID, useful for associating nodes
+      if (feature.leaflet_id) {
+        lFeature._leaflet_id = feature.leaflet_id;
+      }
+
+      var options = {};
+      if (feature.options) {
+        for (var option in feature.options) {
+          options[option] = feature.options[option];
+        }
+        lFeature.setStyle(options);
+      }
+
+      return lFeature;
+    }
 
 		function leaflet_create_point(marker, bounds) {
       var latLng = new L.LatLng(marker.lat, marker.lon);
