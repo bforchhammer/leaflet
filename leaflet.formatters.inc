@@ -209,7 +209,7 @@ function leaflet_field_formatter_view($entity_type, $entity, $field, $instance, 
 function leaflet_process_geofield($items = array()) {
   $data = array();
 
-  geofield_load_geophp();
+  geophp_load();
 
   foreach ($items as $delta => $item) {
     // translate linestring to polyline
