@@ -58,8 +58,22 @@ $features = array(
   )
 );
 
+Views integration
+-----------------
+
+To render a map using Views, enable the module leaflet_views. 
+
+You need to add at least one geofield to the Fields list, and select the Leaflet Map style
+in Format.
+
+In the settings of the style, select the geofield as the Data Source and select a field for Title
+and Description (which will be rendered in the popup).
+
+As a more powerful alternative, you can use node view modes to be rendered in the popup.
+In the Description field, select "<entire node>" and then select a View mode.
+
 Roadmap
 -------
-* Views integration
+
 * UI for managing maps
 * Better documentation
