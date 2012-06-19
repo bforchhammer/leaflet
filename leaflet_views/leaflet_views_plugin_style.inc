@@ -68,17 +68,16 @@ class leaflet_views_plugin_style extends views_plugin_style {
 
     // For node content type, we can render the node as with a specific view mode.
     // Based on code from openlayers_views_style_data::options_form()
+    // @todo add #row support to render the entire row
     if ($this->view->base_table == 'node') {
       $desc_options = array_merge(array(
         '' => '',
-        '#row' => '<' . t('entire row') . '>',
         '#node' => '<' . t('entire node') . '>'
       ), $fields);
     }
     else {
       $desc_options = array_merge(array(
         '' => '',
-        '#row' => '<' . t('entire row') . '>',
       ), $fields);
     }
 
@@ -144,32 +143,40 @@ class leaflet_views_plugin_style extends views_plugin_style {
    */
   function render() {
     if (!empty($this->view->live_preview)) {
-      return 'No preview available';
+      return t('No preview available');
     }
     
     $data = array();
-    if ($this->options['data_source'] && $this->options['description_field']) {
+    
+    if ($this->options['data_source']) {
       $this->render_fields($this->view->result);
 
       foreach ($this->view->result as $id => $result) {
         $data_source_field = 'field_' . $this->options['data_source'];
         $geofield = (!empty($result->$data_source_field)) ? $result->$data_source_field : NULL;
 
-        if (!empty($geofield)) {          
+        if (!empty($geofield)) {     
+          // Handle rendering of a node view     
           if ($this->options['description_field'] === '#node' && is_object($result) && isset($result->nid)) {          
             $view_mode = $this->options['view_mode'] ? $this->options['view_mode'] : 'full';
             $description = drupal_render(node_view(node_load($result->nid), $view_mode));
-          } 
-          else {
+          }
+        
+          // Normal rendering via fields
+          else if($this->options['description_field']) {
             $description = $this->rendered_fields[$id][$this->options['description_field']];
           }
           
-          $raw_data = array();
           foreach ($geofield as $item) {
             $raw_data[] = $item['raw'];
           }
           $points = leaflet_process_geofield($raw_data);
-          array_walk($points, create_function('&$p,$i,$t', '$p[\'popup\'] = $t;'), $description);
+          
+          // Attach pop-ups if we have a description field
+          if (isset($description)) {
+            array_walk($points, create_function('&$p,$i,$t', '$p[\'popup\'] = $t;'), $description);
+          }
+          
           $data = array_merge($data, $points);
         }
       }
