@@ -159,7 +159,8 @@ class leaflet_views_plugin_style extends views_plugin_style {
           // Handle rendering of a node view     
           if ($this->options['description_field'] === '#node' && is_object($result) && isset($result->nid)) {          
             $view_mode = $this->options['view_mode'] ? $this->options['view_mode'] : 'full';
-            $description = drupal_render(node_view(node_load($result->nid), $view_mode));
+            $build = node_view(node_load($result->nid), $view_mode);
+            $description = drupal_render($build);
           }
         
           // Normal rendering via fields
