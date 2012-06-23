@@ -16,6 +16,7 @@ class leaflet_views_plugin_style extends views_plugin_style {
     $options['name_field'] = array('default' => '');
     $options['description_field'] = array('default' => '');
     $options['map'] = array('default' => '');
+    $options['view_mode'] = array('default' => 'full');
     return $options;
   }
 
