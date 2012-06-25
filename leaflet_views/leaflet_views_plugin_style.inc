@@ -169,6 +169,7 @@ class leaflet_views_plugin_style extends views_plugin_style {
             $description = $this->rendered_fields[$id][$this->options['description_field']];
           }
           
+          $raw_data = array();
           foreach ($geofield as $item) {
             $raw_data[] = $item['raw'];
           }
