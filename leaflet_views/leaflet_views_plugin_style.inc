@@ -15,8 +15,9 @@ class leaflet_views_plugin_style extends views_plugin_style {
     $options['data_source'] = array('default' => '');
     $options['name_field'] = array('default' => '');
     $options['description_field'] = array('default' => '');
-    $options['map'] = array('default' => '');
     $options['view_mode'] = array('default' => 'full');
+    $options['map'] = array('default' => '');
+    $options['height'] = array('default' => '400');
     return $options;
   }
 
@@ -137,6 +138,24 @@ class leaflet_views_plugin_style extends views_plugin_style {
       '#default_value' => $this->options['map'] ? $this->options['map'] : '',
       '#required' => TRUE,
     );
+
+    $form['height'] = array(
+      '#title' => t('Map height'),
+      '#type' => 'textfield',
+      '#field_suffix' => t('px'),
+      '#size' => 4,
+      '#default_value' => $this->options['height'],
+      '#required' => FALSE,
+    );
+  }
+
+  /**
+   * Validate the options form.
+   */
+  function options_validate(&$form, &$form_state) {
+    if (!is_numeric($form_state['values']['style_options']['height']) || $form_state['values']['style_options']['height'] < 0) {
+      form_error($form['height'], t('Map height needs to be a positive number'));
+    }
   }
 
   /**
@@ -185,7 +204,7 @@ class leaflet_views_plugin_style extends views_plugin_style {
       }
       
       $map = leaflet_map_get_info($this->options['map']);
-      return leaflet_render_map($map, $data);
+      return leaflet_render_map($map, $data, $this->options['height'] . 'px');
     }
     
     return '';
