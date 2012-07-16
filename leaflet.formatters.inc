@@ -172,29 +172,34 @@ function leaflet_field_formatter_view($entity_type, $entity, $field, $instance, 
   $element = array();
   $settings = $display['settings'];
 
-  switch ($display['type']) {
-    case 'geofield_leaflet':
-      $map = leaflet_map_get_info($settings['leaflet_map']);
-
-      $features = leaflet_process_geofield($items);
-
-      // if only a single feature, set the popup content to the entity title
-      if (count($items) == 1) {
-        $features[0]['popup'] = entity_label($entity_type, $entity);
-      }
-
-      if (!empty($settings['icon']) && isset($settings['icon']['iconUrl'])) {
-        foreach ($features as $key => $feature) {
-          $features[$key]['icon'] = $settings['icon'];
-        }
-      }
-
-      $element[0] = array('#markup' => leaflet_render_map($map, $features));
-
-      break;
+  if (count($items) == 0) {
+    return '';
   }
+  else {
+    switch ($display['type']) {
+      case 'geofield_leaflet':
+        $map = leaflet_map_get_info($settings['leaflet_map']);
 
-  return $element;
+        $features = leaflet_process_geofield($items);
+
+        // if only a single feature, set the popup content to the entity title
+        if (count($items) == 1) {
+          $features[0]['popup'] = entity_label($entity_type, $entity);
+        }
+
+        if (!empty($settings['icon']) && isset($settings['icon']['iconUrl'])) {
+          foreach ($features as $key => $feature) {
+            $features[$key]['icon'] = $settings['icon'];
+          }
+        }
+
+        $element[0] = array('#markup' => leaflet_render_map($map, $features));
+
+        break;
+    }
+
+    return $element; 
+  }
 }
 
 /**
