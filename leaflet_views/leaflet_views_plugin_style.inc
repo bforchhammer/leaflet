@@ -68,13 +68,22 @@ class leaflet_views_plugin_style extends views_plugin_style {
       '#default_value' => $this->options['name_field'],
     );
 
-    // For node content type, we can render the node as with a specific view mode.
-    // Based on code from openlayers_views_style_data::options_form()
-    // @todo add #row support to render the entire row
-    if ($this->view->base_table == 'node') {
+    // Look for entity render modes - only support #node and #profile for the moment
+    // @todo support all entities; we need then to rely on Entity API probably    
+    $entity = NULL;
+    switch ($this->view->base_table) {
+      case 'node':
+        $entity = 'node';
+        break;
+      case 'profile':
+        $entity = 'profile2';
+        break;
+    }
+
+    if ($entity) {
       $desc_options = array_merge(array(
         '' => '',
-        '#node' => '<' . t('entire node') . '>'
+        '#' . $entity => '<' . t('!entity entity', array('!entity' => $entity)) . '>',
       ), $fields);
     }
     else {
@@ -94,36 +103,36 @@ class leaflet_views_plugin_style extends views_plugin_style {
 
     // Taken from openlayers_views_style_data::options_form().
     // Create view mode options
-    // @todo add support for view modes of other entities, not just nodes!
-    // (e.g. profile2 entities, etc.)
-    if ($this->view->base_table == 'node') {
+    if ($entity) {
       // Available_view_modes is the array to contain the avaible
       // view modes, for now this is not content type aware, but should be
       $available_view_modes = array();
       $entity_info = entity_get_info();
+
       // Get the machine names of the view modes
-      $view_modes_machine_names[] = array_keys($entity_info['node']['view modes']);
+      $view_modes_machine_names[] = array_keys($entity_info[$entity]['view modes']);
       // Get the labels (human readable) of the view modes
-      foreach ($entity_info['node']['view modes'] as $key => $view_mode) {
+      foreach ($entity_info[$entity]['view modes'] as $key => $view_mode) {
         $view_modes_labels[] = $view_mode['label'];
       }
       // Combine the machine view mode name with the label, this could sure be done much better?
       $entities_to_display = array_combine($view_modes_machine_names[0], $view_modes_labels);
+
       //output the form
       $form['view_mode'] = array(
         '#type' => 'select',
         '#title' => t('View mode'),
-        '#description' => t('View modes are ways of displaying nodes.'),
+        '#description' => t('View modes are ways of displaying entities.'),
         '#options' => $entities_to_display,
         '#default_value' => !empty($this->options['view_mode']) ?
           $this->options['view_mode'] : 'full',
         '#states' => array(
           'visible' => array(
-            ':input[name="style_options[description_field]"]' => array('value' => '#node'),
+            ':input[name="style_options[description_field]"]' => array('value' => '#' . $entity),
           ),
         ),
       );
-    }     
+    }
 
     // Choose a map preset
     $map_options = array();
@@ -175,11 +184,16 @@ class leaflet_views_plugin_style extends views_plugin_style {
         $data_source_field = 'field_' . $this->options['data_source'];
         $geofield = (!empty($result->$data_source_field)) ? $result->$data_source_field : NULL;
 
-        if (!empty($geofield)) {     
+        if (!empty($geofield)) {
           // Handle rendering of a node view     
           if ($this->options['description_field'] === '#node' && is_object($result) && isset($result->nid)) {          
-            $view_mode = $this->options['view_mode'] ? $this->options['view_mode'] : 'full';
-            $build = node_view(node_load($result->nid), $view_mode);
+            $build = node_view(node_load($result->nid), $this->options['view_mode']);
+            $description = drupal_render($build);
+          }
+
+          // Handle rendering of a profile2 view
+          else if ($this->options['description_field'] === '#profile2' && is_object($result) && isset($result->pid)) { 
+            $build = entity_view('profile2', array(profile2_load($result->pid)), $this->options['view_mode']);
             $description = drupal_render($build);
           }
         
