@@ -29,7 +29,7 @@
           layers[key] = map_layer;
 
           // add the  layer to the map
-          if (i == 0) {
+          if (i >= 0) {
             lMap.addLayer(map_layer);
           }
           i++;
@@ -165,23 +165,23 @@
       this.bounds.push(latLng);
       var lMarker;
       if (marker.icon) {
-        var icon = new L.Icon(marker.icon.iconUrl);
+        var icon = new L.Icon({iconUrl: marker.icon.iconUrl});
 
         // override applicable marker defaults
         if (marker.icon.iconSize) {
-          icon.iconSize = new L.Point(parseInt(marker.icon.iconSize.x), parseInt(marker.icon.iconSize.y));
+          icon.options.iconSize = new L.Point(parseInt(marker.icon.iconSize.x), parseInt(marker.icon.iconSize.y));
         }
         if (marker.icon.iconAnchor) {
-          icon.iconAnchor = new L.Point(parseFloat(marker.icon.iconAnchor.x), parseFloat(marker.icon.iconAnchor.y));
+          icon.options.iconAnchor = new L.Point(parseFloat(marker.icon.iconAnchor.x), parseFloat(marker.icon.iconAnchor.y));
         }
         if (marker.icon.popupAnchor) {
-          icon.popupAnchor = new L.Point(parseFloat(marker.icon.popupAnchor.x), parseFloat(marker.icon.popupAnchor.y));
+          icon.options.popupAnchor = new L.Point(parseFloat(marker.icon.popupAnchor.x), parseFloat(marker.icon.popupAnchor.y));
         }
         if (marker.icon.shadowUrl !== undefined) {
-          icon.shadowUrl = marker.icon.shadowUrl;
+          icon.options.shadowUrl = marker.icon.shadowUrl;
         }
         if (marker.icon.shadowSize) {
-          icon.shadowSize = new L.Point(parseInt(marker.icon.shadowSize.x), parseInt(marker.icon.shadowSize.y));
+          icon.options.shadowSize = new L.Point(parseInt(marker.icon.shadowSize.x), parseInt(marker.icon.shadowSize.y));
         }
 
         lMarker = new L.Marker(latLng, {icon:icon});

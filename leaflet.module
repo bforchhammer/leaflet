@@ -43,7 +43,7 @@ function leaflet_library() {
   $libraries['leaflet'] = array(
     'title' => 'Leaflet',
     'website' => 'http://leaflet.cloudmade.com',
-    'version' => '0.3',
+    'version' => '0.4',
     'js' => array(
       array(
         'type' => 'inline',
