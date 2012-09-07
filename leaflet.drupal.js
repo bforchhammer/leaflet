@@ -97,7 +97,7 @@
             lFeature = Drupal.leaflet.create_point(feature);
             break;
           case 'linestring':
-            lFeature = Drupal.leaflet.linestring(feature);
+            lFeature = Drupal.leaflet.create_linestring(feature);
             break;
           case 'polygon':
             lFeature = Drupal.leaflet.create_polygon(feature);
