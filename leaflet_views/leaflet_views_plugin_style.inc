@@ -218,7 +218,10 @@ class leaflet_views_plugin_style extends views_plugin_style {
       }
       
       $map = leaflet_map_get_info($this->options['map']);
-      return leaflet_render_map($map, $data, $this->options['height'] . 'px');
+
+      if (!empty($data)) {
+        return leaflet_render_map($map, $data, $this->options['height'] . 'px');
+      }
     }
     
     return '';
