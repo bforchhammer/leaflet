@@ -10,7 +10,7 @@ function leaflet_field_formatter_info() {
     $formatters['geofield_leaflet'] = array(
       'label' => t('Leaflet'),
       'field types' => array('geofield'),
-      'settings' => array('leaflet_map' => '', 'icon' => ''),
+      'settings' => array('leaflet_map' => '', 'icon' => '', 'height' => 400),
     );
   }
 
@@ -38,6 +38,13 @@ function leaflet_field_formatter_settings_form($field, $instance, $view_mode, $f
       '#options' => $options,
       '#default_value' => $settings['leaflet_map'],
       '#required' => TRUE,
+    );
+    $element['height'] = array(
+      '#title' => t('Map Height'),
+      '#type' => 'textfield',
+      '#default_value' => $settings['height'],
+      '#field_suffix' => t('px'),
+      '#element_validate' => array('element_validate_integer_positive'),
     );
     $element['icon'] = array(
       '#title' => t('Map Icon'),
@@ -193,7 +200,7 @@ function leaflet_field_formatter_view($entity_type, $entity, $field, $instance, 
           }
         }
 
-        $element[0] = array('#markup' => leaflet_render_map($map, $features));
+        $element[0] = array('#markup' => leaflet_render_map($map, $features, $settings['height'] . 'px'));
 
         break;
     }
