@@ -147,14 +147,15 @@
       // layers served from TileStream need this correction in the y coordinates
       // TODO: Need to explore this more and find a more elegant solution
       if (layer.type == 'tilestream') {
-        map_layer.getTileUrl = function (tilePoint, zoom) {
-          var subdomains = this.options.subdomains,
-            s = this.options.subdomains[(tilePoint.x + tilePoint.y) % subdomains.length];
-
-          return this._url
-            .replace('{z}', zoom)
-            .replace('{x}', tilePoint.x)
-            .replace('{y}', Math.pow(2, zoom) - tilePoint.y - 1);
+        map_layer.getTileUrl = function (tilePoint) {
+          this._adjustTilePoint(tilePoint);
+          var zoom = this._getZoomForUrl();
+          return L.Util.template(this._url, L.Util.extend({
+            s: this._getSubdomain(tilePoint),
+            z: zoom,
+            x: tilePoint.x,
+            y: Math.pow(2, zoom) - tilePoint.y - 1
+          }, this.options));
         }
       }
       return map_layer;
