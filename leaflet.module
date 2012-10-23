@@ -2,29 +2,6 @@
 require_once ('leaflet.formatters.inc');
 
 /**
- * Implements hook_requirements().
- */
-function leaflet_requirements($phase) {
-  $requirements = array();
-
-  // ensure js library is available
-  if ($phase == 'runtime' && !file_exists(libraries_get_path('leaflet') . '/dist/leaflet.js')) {
-    $requirements['leaflet'] = array(
-      'title' => t('Leaflet library not found'),
-      'value' => t('The !leaflet javascript library was not found. Please !download it into the libraries folder.',
-        array(
-          '!leaflet' => l('Leaflet', 'http://leaflet.cloudmade.com'),
-          '!download' => l('download', 'http://leaflet.cloudmade.com/download.html'),
-        )
-      ),
-      'severity' => REQUIREMENT_ERROR,
-    );
-  }
-
-  return $requirements;
-}
-
-/**
  * Implements hook_theme().
  */
 function leaflet_theme($existing, $type, $theme, $path) {
