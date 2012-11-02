@@ -43,6 +43,18 @@ function leaflet_library() {
     ),
   );
 
+  $libraries['leaflet-drupal'] = array(
+    'title' => 'Leaflet initialization',
+    'website' => 'http://drupal.org/project/leaflet',
+    'version' => '7.x-1.x',
+    'js' => array(
+      drupal_get_path('module', 'leaflet') . '/leaflet.drupal.js' => array(),
+    ),
+    'dependencies' => array(
+      array('leaflet', 'leaflet'),
+    ),
+  );
+
   return $libraries;
 }
 
@@ -57,8 +69,7 @@ function leaflet_library() {
  */
 function leaflet_render_map($map, $features = array(), $height = '400px') {
   $map_id = drupal_html_id('leaflet_map');
-  drupal_add_library('leaflet', 'leaflet');
-  drupal_add_js(drupal_get_path('module', 'leaflet') . '/leaflet.drupal.js');
+  drupal_add_library('leaflet', 'leaflet-drupal');
   $settings = array(
     'mapId' => $map_id,
     'map' => $map,
