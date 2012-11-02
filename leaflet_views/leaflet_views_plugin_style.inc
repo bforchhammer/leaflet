@@ -175,21 +175,21 @@ class leaflet_views_plugin_style extends views_plugin_style {
     if ($this->options['data_source']) {
       $this->render_fields($this->view->result);
       foreach ($this->view->result as $id => $result) {
-        $data_source_field = 'field_' . $this->options['data_source'];
-        $geofield = (!empty($result->$data_source_field)) ? $result->$data_source_field : NULL;
+        $geofield = $this->get_field_value($id, $this->options['data_source']);
 
         if (!empty($geofield)) {
+          $points = leaflet_process_geofield($geofield);
 
           // Render the entity with the selected view mode
           if ($this->options['description_field'] === '#rendered_entity' && is_object($result)) {
             $entities = entity_load($this->entity_type, array($result->{$this->entity_info['entity keys']['id']}));
-                        
+
             $build = entity_view(
               $this->entity_type,
               $entities,
               $this->options['view_mode']
             );
-            
+
             $description = drupal_render($build);
           }
 
@@ -197,12 +197,6 @@ class leaflet_views_plugin_style extends views_plugin_style {
           elseif ($this->options['description_field']) {
             $description = $this->rendered_fields[$id][$this->options['description_field']];
           }
-
-          $raw_data = array();
-          foreach ($geofield as $item) {
-            $raw_data[] = $item['raw'];
-          }
-          $points = leaflet_process_geofield($raw_data);
 
           // Attach pop-ups if we have a description field
           if (isset($description)) {
