@@ -72,10 +72,16 @@
           lMap.addControl(new L.Control.Layers(layers, overlays));
         }
 
-        // either center the map or set to bounds
+        // center the map
         if (this.map.center) {
           lMap.setView(new L.LatLng(this.map.center.lat, this.map.center.lon), this.map.settings.zoom);
         }
+        // if we have provided a zoom level, then use it after fitting bounds
+        else if (this.map.settings.zoom) {
+          Drupal.leaflet.fitbounds(lMap);
+          lMap.setZoom(this.map.settings.zoom);
+        }
+        // fit to bounds
         else {
           Drupal.leaflet.fitbounds(lMap);
         }
