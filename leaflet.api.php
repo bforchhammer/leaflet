@@ -36,7 +36,10 @@ function hook_leaflet_map_info() {
         'fadeAnimation' => TRUE,
         'zoomAnimation' => TRUE,
         'closePopupOnClick' => TRUE,
-        'layerControl' => TRUE
+        'layerControl' => TRUE,
+        // 'minZoom' => 10,
+        // 'maxZoom' => 15,
+        // 'zoom' => 15, // set the map zoom fixed to 15
       ),
       'layers' => array(
         'earth' => array(
