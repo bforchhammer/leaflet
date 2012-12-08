@@ -43,6 +43,7 @@ function leaflet_library() {
       libraries_get_path('leaflet') . '/dist/leaflet.ie.css' => array(
         'browsers' => array(
           'IE' => 'lte IE 8',
+          '!IE' => FALSE,
         ),
       ),
     ),
