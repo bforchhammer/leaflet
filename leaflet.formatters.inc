@@ -48,7 +48,7 @@ function leaflet_field_formatter_settings_form($field, $instance, $view_mode, $f
     );
     $element['popup'] = array(
       '#title' => t('Popup'),
-      '#description' => t('Show a popup for fields with a single location'),
+      '#description' => t('Show a popup for single location fields.'),
       '#type' => 'checkbox',
       '#default_value' => $settings['popup'],
     );
