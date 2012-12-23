@@ -171,6 +171,7 @@
       var latLng = new L.LatLng(marker.lat, marker.lon);
       this.bounds.push(latLng);
       var lMarker;
+
       if (marker.icon) {
         var icon = new L.Icon({iconUrl: marker.icon.iconUrl});
 
@@ -189,6 +190,9 @@
         }
         if (marker.icon.shadowSize) {
           icon.options.shadowSize = new L.Point(parseInt(marker.icon.shadowSize.x), parseInt(marker.icon.shadowSize.y));
+        }
+        if (marker.icon.shadowAnchor) {
+          icon.options.shadowAnchor = new L.Point(parseInt(marker.icon.shadowAnchor.x), parseInt(marker.icon.shadowAnchor.y));
         }
 
         lMarker = new L.Marker(latLng, {icon:icon});
