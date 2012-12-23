@@ -76,11 +76,22 @@ function leaflet_library() {
 function leaflet_render_map($map, $features = array(), $height = '400px') {
   $map_id = drupal_html_id('leaflet_map');
   drupal_add_library('leaflet', 'leaflet-drupal');
+
+  // Allow map definitions to provide a default icon
+  if (isset($map['icon']['iconUrl'])) {
+    foreach ($features as &$feature) {
+      if (!isset($feature['icon'])) {
+        $feature['icon'] = $map['icon'];
+      }
+    }
+  }
+
   $settings = array(
     'mapId' => $map_id,
     'map' => $map,
     'features' => $features,
   );
+
   drupal_add_js(array('leaflet' => array($settings)), 'setting');
 
   return theme('leaflet_map', array('map_id' => $map_id, 'height' => $height));
