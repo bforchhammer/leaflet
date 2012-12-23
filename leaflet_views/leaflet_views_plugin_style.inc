@@ -151,6 +151,128 @@ class leaflet_views_plugin_style extends views_plugin_style {
       '#default_value' => $this->options['height'],
       '#required' => FALSE,
     );
+
+    $form['icon'] = array(
+      '#title' => t('Map Icon'),
+      '#type' => 'fieldset',
+      '#collapsible' => TRUE,
+      '#collapsed' => !isset($this->options['icon']['iconUrl']),
+    );
+
+    $form['icon']['iconUrl'] = array(
+      '#title' => t('Icon URL'),
+      '#description' => t('Can be an absolute or relative URL.'),
+      '#type' => 'textfield',
+      '#maxlength' => 999,
+      '#default_value' => $this->options['icon']['iconUrl'],
+      '#element_validate' => array('leaflet_icon_validate')
+    );
+
+    $form['icon']['shadowUrl'] = array(
+      '#title' => t('Icon Shadow URL'),
+      '#type' => 'textfield',
+      '#maxlength' => 999,
+      '#default_value' => $this->options['icon']['shadowUrl'],
+      '#element_validate' => array('leaflet_icon_validate')
+    );
+
+    $form['icon']['iconSize'] = array(
+      '#title' => t('Icon Size'),
+      '#type' => 'fieldset',
+      '#collapsible' => FALSE,
+      '#description' => t('Size of the icon image in pixels.')
+    );
+
+    $form['icon']['iconSize']['x'] = array(
+      '#title' => t('Width'),
+      '#type' => 'textfield',
+      '#maxlength' => 3,
+      '#size' => 3,
+      '#default_value' => isset($this->options['icon']['iconSize']['x']) ? $this->options['icon']['iconSize']['x'] : '',
+      '#element_validate' => array('element_validate_integer_positive'),
+    );
+
+    $form['icon']['iconSize']['y'] = array(
+      '#title' => t('Height'),
+      '#type' => 'textfield',
+      '#maxlength' => 3,
+      '#size' => 3,
+      '#default_value' => isset($this->options['icon']['iconSize']['y']) ? $this->options['icon']['iconSize']['y'] : '',
+      '#element_validate' => array('element_validate_integer_positive'),
+    );
+
+    $form['icon']['iconAnchor'] = array(
+      '#title' => t('Icon Anchor'),
+      '#type' => 'fieldset',
+      '#collapsible' => FALSE,
+      '#description' => t('The coordinates of the "tip" of the icon (relative to its top left corner). The icon will be aligned so that this point is at the marker\'s geographical location.')
+    );
+
+    $form['icon']['iconAnchor']['x'] = array(
+      '#title' => t('X'),
+      '#type' => 'textfield',
+      '#maxlength' => 3,
+      '#size' => 3,
+      '#default_value' => isset($this->options['icon']['iconAnchor']['x']) ? $this->options['icon']['iconAnchor']['x'] : '',
+      '#element_validate' => array('element_validate_number'),
+    );
+
+    $form['icon']['iconAnchor']['y'] = array(
+      '#title' => t('Y'),
+      '#type' => 'textfield',
+      '#maxlength' => 3,
+      '#size' => 3,
+      '#default_value' => isset($this->options['icon']['iconAnchor']['y']) ? $this->options['icon']['iconAnchor']['y'] : '',
+      '#element_validate' => array('element_validate_number'),
+    );
+
+    $form['icon']['shadowAnchor'] = array(
+      '#title' => t('Shadow Anchor'),
+      '#type' => 'fieldset',
+      '#collapsible' => FALSE,
+      '#description' => t('The point from which the shadow is shown.')
+    );
+    $form['icon']['shadowAnchor']['x'] = array(
+      '#title' => t('X'),
+      '#type' => 'textfield',
+      '#maxlength' => 3,
+      '#size' => 3,
+      '#default_value' => isset($this->options['icon']['shadowAnchor']['x']) ? $this->options['icon']['shadowAnchor']['x'] : '',
+      '#element_validate' => array('element_validate_number'),
+    );
+    $form['icon']['shadowAnchor']['y'] = array(
+      '#title' => t('Y'),
+      '#type' => 'textfield',
+      '#maxlength' => 3,
+      '#size' => 3,
+      '#default_value' => isset($this->options['icon']['shadowAnchor']['y']) ? $this->options['icon']['shadowAnchor']['y'] : '',
+      '#element_validate' => array('element_validate_number'),
+    );
+
+    $form['icon']['popupAnchor'] = array(
+      '#title' => t('Popup Anchor'),
+      '#type' => 'fieldset',
+      '#collapsible' => FALSE,
+      '#description' => t('The point from which the marker popup opens, relative to the anchor point.')
+    );
+
+    $form['icon']['popupAnchor']['x'] = array(
+      '#title' => t('X'),
+      '#type' => 'textfield',
+      '#maxlength' => 3,
+      '#size' => 3,
+      '#default_value' => isset($this->options['icon']['popupAnchor']['x']) ? $this->options['icon']['popupAnchor']['x'] : '',
+      '#element_validate' => array('element_validate_number'),
+    );
+
+    $form['icon']['popupAnchor']['y'] = array(
+      '#title' => t('Y'),
+      '#type' => 'textfield',
+      '#maxlength' => 3,
+      '#size' => 3,
+      '#default_value' => isset($this->options['icon']['popupAnchor']['y']) ? $this->options['icon']['popupAnchor']['y'] : '',
+      '#element_validate' => array('element_validate_number'),
+    );
   }
 
   /**
@@ -204,6 +326,12 @@ class leaflet_views_plugin_style extends views_plugin_style {
           }
 
           $data = array_merge($data, $points);
+
+          if (!empty($this->options['icon']) && $this->options['icon']['iconUrl']) {
+            foreach ($data as $key => $feature) {
+              $data[$key]['icon'] = $this->options['icon'];
+            }
+          }
         }
       }
 
