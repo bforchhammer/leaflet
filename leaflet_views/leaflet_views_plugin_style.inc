@@ -164,7 +164,7 @@ class leaflet_views_plugin_style extends views_plugin_style {
       '#description' => t('Can be an absolute or relative URL.'),
       '#type' => 'textfield',
       '#maxlength' => 999,
-      '#default_value' => $this->options['icon']['iconUrl'],
+      '#default_value' => isset($this->options['icon']['iconUrl']) ? $this->options['icon']['iconUrl'] : '',
       '#element_validate' => array('leaflet_icon_validate')
     );
 
@@ -172,7 +172,7 @@ class leaflet_views_plugin_style extends views_plugin_style {
       '#title' => t('Icon Shadow URL'),
       '#type' => 'textfield',
       '#maxlength' => 999,
-      '#default_value' => $this->options['icon']['shadowUrl'],
+      '#default_value' => isset($this->options['icon']['shadowUrl']) ? $this->options['icon']['shadowUrl'] : '',
       '#element_validate' => array('leaflet_icon_validate')
     );
 
