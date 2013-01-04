@@ -94,6 +94,10 @@
 
         // add the leaflet map to our settings object to make it accessible
         this.lMap = lMap;
+
+				// Destroy features so that an AJAX reload does not get parts of the old set.
+				// Required when the View has "Use AJAX" set to Yes.
+				this.features = null;
       });
 
       function leaflet_create_feature(feature) {
