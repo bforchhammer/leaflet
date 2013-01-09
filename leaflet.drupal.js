@@ -268,7 +268,7 @@
         }
       });
 
-      lJSON.addGeoJSON(json);
+      lJSON.addData(json);
       return lJSON;
     },
 
