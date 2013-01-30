@@ -33,6 +33,7 @@ class leaflet_views_plugin_style extends views_plugin_style {
     $options['view_mode'] = array('default' => 'full');
     $options['map'] = array('default' => '');
     $options['height'] = array('default' => '400');
+    $options['icon'] = array();
     return $options;
   }
 
