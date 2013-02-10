@@ -21,8 +21,7 @@
  */
 function hook_leaflet_map_info() {
   return array(
-    'OSM Mapnik' =>
-    array(
+    'OSM Mapnik' => array(
       'label' => 'OSM Mapnik',
       'description' => t('Leaflet default map.'),
       'settings' => array(
@@ -59,5 +58,6 @@ function hook_leaflet_map_info() {
       //   'shadowSize'    => array('x' => '25', 'y' => '27'),
       //   'shadowAnchor'  => array('x' => '0', 'y' => '27'),
       // ),
+    ),
   );
 }
