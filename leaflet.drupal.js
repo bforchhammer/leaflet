@@ -6,7 +6,7 @@
       $(settings.leaflet).each(function () {
         // bail if the map already exists
         var container = L.DomUtil.get(this.mapId);
-        if (container._leaflet) {
+        if (!container || container._leaflet) {
           return false;
         }
 
