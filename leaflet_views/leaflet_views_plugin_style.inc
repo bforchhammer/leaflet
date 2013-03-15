@@ -323,7 +323,16 @@ class leaflet_views_plugin_style extends views_plugin_style {
 
           // Attach pop-ups if we have a description field
           if (isset($description)) {
-            array_walk($points, create_function('&$p,$i,$t', '$p[\'popup\'] = $t;'), $description);
+            foreach ($points as &$point) {
+              $point['popup'] = $description;
+            }
+          }
+
+          // Attach also titles, they might be used later on
+          if ($this->options['name_field']) {
+            foreach ($points as &$point) {
+              $point['label'] = $this->rendered_fields[$id][$this->options['name_field']];
+            }
           }
 
           $data = array_merge($data, $points);
