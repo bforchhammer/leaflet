@@ -8,39 +8,48 @@ function leaflet_theme($existing, $type, $theme, $path) {
   return array(
     'leaflet_map' => array(
       'arguments' => array('map_id' => NULL, 'height' => '400px'),
+      // When theme('leaflet_map'...) is called, the system will look for
+      // /leaflet/templates/leaflet_map.html.twig.
       'template' => 'leaflet_map',
     ),
   );
 }
 
+function leaflet_libraries_get_path($base) {
+  return module_exists('libraries') ? libraries_get_path($base) : "sites/all/libraries/$base";
+}
+
 /**
- * Implements hook_library().
+ * Implements hook_library_info().
  */
-function leaflet_library() {
+function leaflet_library_info() {
+  $leaflet_lib_path = leaflet_libraries_get_path('leaflet');
+
+  // Not sure this format is right for D8
   $libraries['leaflet'] = array(
     'title' => 'Leaflet',
     'website' => 'http://leaflet.cloudmade.com',
-    'version' => '0.4',
+    'version' => '0.6',
     'js' => array(
       array(
         'type' => 'inline',
-        'data' => 'L_ROOT_URL = "' . base_path() . libraries_get_path('leaflet') . '/dist/";',
+        'data' => 'L_ROOT_URL = "' . base_path() . $leaflet_lib_path . '/";',
         'group' => JS_LIBRARY,
         'preprocess' => FALSE
       ),
       array(
         'type' => 'file',
-        'data' => libraries_get_path('leaflet') . '/dist/leaflet.js',
+        'data' => "$leaflet_lib_path/leaflet.js",
         'group' => JS_LIBRARY,
         'preprocess' => FALSE
       ),
     ),
     'css' => array(
-      libraries_get_path('leaflet') . '/dist/leaflet.css' => array(
+      "$leaflet_lib_path/leaflet.css" => array(
         'type' => 'file',
         'media' => 'screen',
       ),
-      libraries_get_path('leaflet') . '/dist/leaflet.ie.css' => array(
+      "$leaflet_lib_path/leaflet.ie.css" => array(
         'browsers' => array(
           'IE' => 'lte IE 8',
           '!IE' => FALSE,
@@ -52,7 +61,7 @@ function leaflet_library() {
   $libraries['leaflet-drupal'] = array(
     'title' => 'Leaflet initialization',
     'website' => 'http://drupal.org/project/leaflet',
-    'version' => '7.x-1.x',
+    'version' => VERSION,
     'js' => array(
       drupal_get_path('module', 'leaflet') . '/leaflet.drupal.js' => array(),
     ),
@@ -86,7 +95,7 @@ function leaflet_render_map($map, $features = array(), $height = '400px') {
     }
   }
 
-  $settings = array(
+  $settings[0] = array(
     'mapId' => $map_id,
     'map' => $map,
     'features' => $features,
@@ -110,8 +119,8 @@ function leaflet_map_get_info($map = NULL) {
   $map_info = &$drupal_static_fast['leaflet_map_info'];
 
   if (empty($map_info)) {
-    if ($cache = cache_get("leaflet_map_info")) {
-      $map_info = $cache->data;
+    if ($cached = cache()->get('leaflet_map_info')) {
+      $map_info = $cached->data;
     }
     else {
       $map_info = module_invoke_all('leaflet_map_info');
@@ -119,7 +128,7 @@ function leaflet_map_get_info($map = NULL) {
       // Let other modules alter the map info.
       drupal_alter('leaflet_map_info', $map_info);
 
-      cache_set("leaflet_map_info", $map_info);
+      cache()->set('leaflet_map_info', $map_info);
     }
   }
 
@@ -167,5 +176,38 @@ function leaflet_leaflet_map_info() {
       ),
     ),
   );
+}
+
+/**
+ * Implements hook_requirements().
+ */
+function leaflet_requirements($phase) {
+  $requirements = array();
+  if ($phase != 'runtime') {
+    return $requirements;
+  }
+  // Ensure js library is installed. Show number of maps avaialble.
+  if (file_exists(leaflet_libraries_get_path('leaflet') . '/leaflet.js')) {
+    $requirements['leaflet'] = array(
+      'title' => t('Leaflet library'),
+      'value' => t('Installed. @maps available.', array(
+        '@maps' => format_plural(count(leaflet_map_get_info()),'One map', '@count maps'))),
+      'severity' => REQUIREMENT_OK,
+    );
+  }
+  else {
+    $requirements['leaflet'] = array(
+      'title' => t('Leaflet library not found'),
+      'value' => t('The !leaflet javascript library was not found. Please !download it into the libraries folder. Also ensure that the library is named leaflet with a lower case "l".',
+        array(
+          '!leaflet' => l('leaflet', 'http://leaflet.cloudmade.com'),
+          '!download' => l('download', 'http://leaflet.cloudmade.com/download.html'),
+        )
+      ),
+      'severity' => REQUIREMENT_ERROR,
+    );
+  }
+
+  return $requirements;
 }
 

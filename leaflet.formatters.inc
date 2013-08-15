@@ -205,7 +205,7 @@ function leaflet_field_formatter_settings_summary($field, $instance, $view_mode)
 /**
  * Implements hook_field_formatter_view().
  */
-function leaflet_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
+function leaflet_field_formatter_view($entity, $field, $instance, $langcode, $items, $display) {
   $element = array();
   $settings = $display['settings'];
 
@@ -221,7 +221,7 @@ function leaflet_field_formatter_view($entity_type, $entity, $field, $instance, 
 
         // if only a single feature, set the popup content to the entity title
         if ($settings['popup'] && count($items) == 1) {
-          $features[0]['popup'] = entity_label($entity_type, $entity);
+          $features[0]['popup'] = $entity->label();
         }
 
         if (!empty($settings['icon']) && $settings['icon']['iconUrl']) {
@@ -324,4 +324,28 @@ function leaflet_process_geofield($items = array()) {
   }
 
   return $data;
+}
+
+function leaflet_process_rendered_geofield($geofield_value) {
+  $coords = explode('<br/>', $geofield_value);
+  // If we have the Latitude/Longitude format, which is rendered as
+  // "Latitude: lat<br/>Longitude: long", convert it to an array('point', lat, lon)
+  // Other formats are handled by geoPHP::load(), below.
+  if (count($coords) == 2) {
+    $lat = str_replace('Latitude: ', '',  $coords[0]);
+    $lon = str_replace('Longitude: ', '',  $coords[1]);
+    return array(
+      array('geo_type' => 'point', 'lat' => $lat, 'lon' => $lon)
+    );
+  }
+  else {
+    geophp_load();
+    $geometry = geoPHP::load($geofield_value);
+    if ($geometry) {
+      return array(
+        array('geo_type' => 'point', 'lat' => $geometry->coords[1], 'lon' => $geometry->coords[0])
+      );
+    }
+  }
+
 }

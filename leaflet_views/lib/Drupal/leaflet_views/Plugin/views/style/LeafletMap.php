@@ -2,22 +2,59 @@
 
 /**
  * @file
- * Extension of the Views Plugin Style for Leaflet Map
- * Adapted from the GeoField Map views module and the OpenLayers Views module.
+ * Definition of Drupal\leaflet_views\Plugin\views\style\LeafletMap.
  */
-class leaflet_views_plugin_style extends views_plugin_style {
+
+namespace Drupal\leaflet_views\Plugin\views\style;
+
+use Drupal\Component\Annotation\Plugin;
+use Drupal\Core\Annotation\Translation;
+use Drupal\views\ViewExecutable;
+use Drupal\views\Plugin\views\display\DisplayPluginBase;
+use Drupal\views\Plugin\views\style\StylePluginBase;
+
+
+/**
+ * Style plugin to render a View output as a Leaflet map.
+ *
+ * @ingroup views_style_plugins
+ *
+ * Attributes set below end up in the $this->definition[] array.
+ *
+ * @Plugin(
+ *   id = "leafet_map",
+ *   title = @Translation("Leaflet map"),
+ *   help = @Translation("Displays a View as a Leaflet map."),
+ *   type = "normal",
+ *   theme = "leaflet-map",
+ *   even_empty = TRUE
+ * )
+ */
+class LeafletMap extends StylePluginBase {
 
   /**
    * If this view is displaying an entity, save the entity type and info.
    */
-  function init(&$view, &$display, $options = NULL) {
+  public function init(ViewExecutable $view, DisplayPluginBase $display, array &$options = NULL) {
+
+    // Set these before calling parent::init() as it uses these.
+    $this->definition['even empty'] = TRUE; // cannot have space in annotation, so doing it here
+    $this->usesOptions = TRUE;
+    $this->usesRowPlugin = FALSE;
+    $this->usesRowClass = FALSE;
+    $this->usesGrouping = FALSE;
+    $this->usesFields = TRUE;
+
     parent::init($view, $display, $options);
 
+    // For later use, set entity info related to the View's base table.
+    $base_tables = array_keys($view->getBaseTables());
+    $base_table = reset($base_tables);
     foreach (entity_get_info() as $key => $info) {
-      if ($view->base_table == $info['base table']) {
+      if (isset($info['base_table']) && $info['base_table'] == $base_table) {
         $this->entity_type = $key;
         $this->entity_info = $info;
-        break;
+        return;
       }
     }
   }
@@ -25,41 +62,39 @@ class leaflet_views_plugin_style extends views_plugin_style {
   /**
    * Set default options
    */
-  function option_definition() {
-    $options = parent::option_definition();
+  protected function defineOptions() {
+    $options = parent::defineOptions();
     $options['data_source'] = array('default' => '');
     $options['name_field'] = array('default' => '');
     $options['description_field'] = array('default' => '');
     $options['view_mode'] = array('default' => 'full');
     $options['map'] = array('default' => '');
     $options['height'] = array('default' => '400');
-    $options['icon'] = array();
+    $options['icon'] = array('default' => array());
     return $options;
   }
 
   /**
    * Options form
    */
-  function options_form(&$form, &$form_state) {
-    parent::options_form($form, $form_state);
+  public function buildOptionsForm(&$form, &$form_state) {
+    parent::buildOptionsForm($form, $form_state);
 
-    // Get list of fields in this view & flag available geodata fields
-    $handlers = $this->display->handler->get_handlers('field');
-
+    // Get a list of fields and a sublist of geo data fields in this view
     $fields = array();
-    $fields_data = array();
-    foreach ($handlers as $field_id => $handler) {
-      $fields[$field_id] = $handler->ui_name();
-
+    $fields_geo_data = array();
+    foreach ($this->displayHandler->getHandlers('field') as $field_id => $handler) {
+      $label = $handler->label() ?: $field_id;
+      $fields[$field_id] = $label;
       if (!empty($handler->field_info['type']) && $handler->field_info['type'] == 'geofield') {
-        $fields_data[$field_id] = $handler->ui_name();
+        $fields_geo_data[$field_id] = $label;
       }
     }
 
-    // Check whether we have a geofield we can work with
-    if (!count($fields_data)) {
+    // Check whether we have a geo data field we can work with
+    if (!count($fields_geo_data)) {
       $form['error'] = array(
-        '#markup' => t('Please add at least one geofield to the view'),
+        '#markup' => t('Please add at least one geofield to the view.'),
       );
       return;
     }
@@ -69,7 +104,7 @@ class leaflet_views_plugin_style extends views_plugin_style {
       '#type' => 'select',
       '#title' => t('Data Source'),
       '#description' => t('Which field contains geodata?'),
-      '#options' => $fields_data,
+      '#options' => $fields_geo_data,
       '#default_value' => $this->options['data_source'],
       '#required' => TRUE,
     );
@@ -79,15 +114,11 @@ class leaflet_views_plugin_style extends views_plugin_style {
       '#type' => 'select',
       '#title' => t('Title Field'),
       '#description' => t('Choose the field which will appear as a title on tooltips.'),
-      // '#options' => $fields,
       '#options' => array_merge(array('' => ''), $fields),
       '#default_value' => $this->options['name_field'],
     );
 
-    $desc_options = array_merge(array(
-        '' => '',
-    ), $fields);
-
+    $desc_options = array_merge(array('' => ''), $fields);
     // Add an option to render the entire entity using a view mode
     if ($this->entity_type) {
       $desc_options += array(
@@ -97,36 +128,34 @@ class leaflet_views_plugin_style extends views_plugin_style {
 
     $form['description_field'] = array(
       '#type' => 'select',
-      '#title' => t('Description Content'),
+      '#title' => t('Description Field'),
       '#description' => t('Choose the field or rendering method which will appear as a description on tooltips or popups.'),
       '#required' => FALSE,
       '#options' => $desc_options,
       '#default_value' => $this->options['description_field'],
     );
 
-    // Taken from openlayers_views_style_data::options_form().
-    // Create view mode options
     if ($this->entity_type) {
 
-      // Get the labels (human readable) of the view modes
+      // Get the human readable labels for the entity view modes
       $view_mode_options = array();
-      foreach ($this->entity_info['view modes'] as $key => $view_mode) {
+      foreach (entity_get_view_modes($this->entity_type) as $key => $view_mode) {
         $view_mode_options[$key] = $view_mode['label'];
       }
-
-      //output the form
+      // The View Mode drop-down is visibile conditional on "#rendered_entity"
+      // being selected in the Description drop-down above.
       $form['view_mode'] = array(
         '#type' => 'select',
         '#title' => t('View mode'),
         '#description' => t('View modes are ways of displaying entities.'),
         '#options' => $view_mode_options,
-        '#default_value' => !empty($this->options['view_mode']) ?
-          $this->options['view_mode'] : 'full',
+        '#default_value' => !empty($this->options['view_mode']) ? $this->options['view_mode'] : 'full',
         '#states' => array(
           'visible' => array(
-            ':input[name="style_options[description_field]"]' => array('value' => '#rendered_entity'),
-          ),
-        ),
+            ':input[name="style_options[description_field]"]' => array(
+              'value' => '#rendered_entity')
+          )
+        )
       );
     }
 
@@ -135,12 +164,11 @@ class leaflet_views_plugin_style extends views_plugin_style {
     foreach (leaflet_map_get_info() as $key => $map) {
       $map_options[$key] = t($map['label']);
     }
-
     $form['map'] = array(
       '#title' => t('Map'),
       '#type' => 'select',
       '#options' => $map_options,
-      '#default_value' => $this->options['map'] ? $this->options['map'] : '',
+      '#default_value' => isset($this->options['map']) ? $this->options['map'] : '',
       '#required' => TRUE,
     );
 
@@ -151,13 +179,6 @@ class leaflet_views_plugin_style extends views_plugin_style {
       '#size' => 4,
       '#default_value' => $this->options['height'],
       '#required' => FALSE,
-    );
-
-    $form['hide_empty'] = array(
-      '#title' => t('Hide empty'),
-      '#type' => 'checkbox',
-      '#description' => t('Hide the Leaflet map if there are no results to display.'),
-      '#default_value' => isset($this->options['hide_empty']) ? $this->options['hide_empty'] : TRUE
     );
 
     $form['icon'] = array(
@@ -284,45 +305,44 @@ class leaflet_views_plugin_style extends views_plugin_style {
   }
 
   /**
-   * Validate the options form.
+   * Validates the options form.
    */
-  function options_validate(&$form, &$form_state) {
+  public function validateOptionsForm(&$form, &$form_state) {
     if (!is_numeric($form_state['values']['style_options']['height']) || $form_state['values']['style_options']['height'] < 0) {
       form_error($form['height'], t('Map height needs to be a positive number'));
     }
   }
 
   /**
-   * Renders view
+   * Renders the View.
    */
   function render() {
+    
     if (!empty($this->view->live_preview)) {
-      return t('No preview available');
+      return t('Preview is not available for Leaflet map.');
     }
-
     $data = array();
-
+    $geofield_name = $this->options['data_source'];
     if ($this->options['data_source']) {
-      $this->render_fields($this->view->result);
+      $this->renderFields($this->view->result);
       foreach ($this->view->result as $id => $result) {
-        $geofield = $this->get_field_value($id, $this->options['data_source']);
 
-        if (!empty($geofield)) {
-          $points = leaflet_process_geofield($geofield);
+        $geofield_value = $this->getFieldValue($id, $geofield_name);
+
+        if (empty($geofield_value)) {
+          // In case the result is not among the raw results, get it from the
+          // rendered results.
+          $geofield_value = leaflet_process_rendered_geofield($this->rendered_fields[$id][$geofield_name]);
+        }
+        if (!empty($geofield_value)) {
+          $points = leaflet_process_geofield($geofield_value);
 
           // Render the entity with the selected view mode
           if ($this->options['description_field'] === '#rendered_entity' && is_object($result)) {
-            $entities = entity_load($this->entity_type, array($result->{$this->entity_info['entity keys']['id']}));
-
-            $build = entity_view(
-              $this->entity_type,
-              $entities,
-              $this->options['view_mode']
-            );
-
+            $entity = entity_load($this->entity_type, $result->{$this->entity_info['entity_keys']['id']});
+            $build = entity_view($entity, $this->options['view_mode']);
             $description = drupal_render($build);
           }
-
           // Normal rendering via fields
           elseif ($this->options['description_field']) {
             $description = $this->rendered_fields[$id][$this->options['description_field']];
@@ -342,9 +362,6 @@ class leaflet_views_plugin_style extends views_plugin_style {
             }
           }
 
-          // Let modules modify the points data.
-          drupal_alter('leaflet_views_alter_points_data', $result, $points);
-
           $data = array_merge($data, $points);
 
           if (!empty($this->options['icon']) && $this->options['icon']['iconUrl']) {
@@ -357,11 +374,10 @@ class leaflet_views_plugin_style extends views_plugin_style {
 
       $map = leaflet_map_get_info($this->options['map']);
 
-      if (!empty($data) || (isset($this->options['hide_empty']) && !$this->options['hide_empty'])) {
+      if (!empty($data)) {
         return leaflet_render_map($map, $data, $this->options['height'] . 'px');
       }
     }
-
     return '';
   }
 }

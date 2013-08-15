@@ -1,0 +1,6 @@
+name: Leaflet
+type: module
+description: Integration with the Leaflet map scripting library.
+core: 8.x
+version: VERSION
+package: Leaflet
