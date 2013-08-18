@@ -137,7 +137,7 @@ class LeafletMap extends StylePluginBase {
 
     if ($this->entity_type) {
 
-      // Get the human readable labels for the entity view modes
+      // Get the human readable labels for the entity view modes.
       $view_mode_options = array();
       foreach (entity_get_view_modes($this->entity_type) as $key => $view_mode) {
         $view_mode_options[$key] = $view_mode['label'];
@@ -168,7 +168,7 @@ class LeafletMap extends StylePluginBase {
       '#title' => t('Map'),
       '#type' => 'select',
       '#options' => $map_options,
-      '#default_value' => isset($this->options['map']) ? $this->options['map'] : '',
+      '#default_value' => $this->options['map'] ?: '',
       '#required' => TRUE,
     );
 
@@ -193,16 +193,14 @@ class LeafletMap extends StylePluginBase {
       '#description' => t('Can be an absolute or relative URL.'),
       '#type' => 'textfield',
       '#maxlength' => 999,
-      '#default_value' => isset($this->options['icon']['iconUrl']) ? $this->options['icon']['iconUrl'] : '',
-      '#element_validate' => array('leaflet_icon_validate')
+      '#default_value' => $this->options['icon']['iconUrl'] ?: '',
     );
 
     $form['icon']['shadowUrl'] = array(
       '#title' => t('Icon Shadow URL'),
       '#type' => 'textfield',
       '#maxlength' => 999,
-      '#default_value' => isset($this->options['icon']['shadowUrl']) ? $this->options['icon']['shadowUrl'] : '',
-      '#element_validate' => array('leaflet_icon_validate')
+      '#default_value' => $this->options['icon']['shadowUrl'] ?: '',
     );
 
     $form['icon']['iconSize'] = array(
@@ -218,7 +216,7 @@ class LeafletMap extends StylePluginBase {
       '#maxlength' => 3,
       '#size' => 3,
       '#default_value' => isset($this->options['icon']['iconSize']['x']) ? $this->options['icon']['iconSize']['x'] : '',
-      '#element_validate' => array('element_validate_integer_positive'),
+      '#element_validate' => array('form_validate_number'),
     );
 
     $form['icon']['iconSize']['y'] = array(
@@ -227,7 +225,7 @@ class LeafletMap extends StylePluginBase {
       '#maxlength' => 3,
       '#size' => 3,
       '#default_value' => isset($this->options['icon']['iconSize']['y']) ? $this->options['icon']['iconSize']['y'] : '',
-      '#element_validate' => array('element_validate_integer_positive'),
+      '#element_validate' => array('form_validate_number'),
     );
 
     $form['icon']['iconAnchor'] = array(
@@ -243,7 +241,7 @@ class LeafletMap extends StylePluginBase {
       '#maxlength' => 3,
       '#size' => 3,
       '#default_value' => isset($this->options['icon']['iconAnchor']['x']) ? $this->options['icon']['iconAnchor']['x'] : '',
-      '#element_validate' => array('element_validate_number'),
+      '#element_validate' => array('form_validate_number'),
     );
 
     $form['icon']['iconAnchor']['y'] = array(
@@ -252,7 +250,7 @@ class LeafletMap extends StylePluginBase {
       '#maxlength' => 3,
       '#size' => 3,
       '#default_value' => isset($this->options['icon']['iconAnchor']['y']) ? $this->options['icon']['iconAnchor']['y'] : '',
-      '#element_validate' => array('element_validate_number'),
+      '#element_validate' => array('form_validate_number'),
     );
 
     $form['icon']['shadowAnchor'] = array(
@@ -267,7 +265,7 @@ class LeafletMap extends StylePluginBase {
       '#maxlength' => 3,
       '#size' => 3,
       '#default_value' => isset($this->options['icon']['shadowAnchor']['x']) ? $this->options['icon']['shadowAnchor']['x'] : '',
-      '#element_validate' => array('element_validate_number'),
+      '#element_validate' => array('form_validate_number'),
     );
     $form['icon']['shadowAnchor']['y'] = array(
       '#title' => t('Y'),
@@ -275,7 +273,7 @@ class LeafletMap extends StylePluginBase {
       '#maxlength' => 3,
       '#size' => 3,
       '#default_value' => isset($this->options['icon']['shadowAnchor']['y']) ? $this->options['icon']['shadowAnchor']['y'] : '',
-      '#element_validate' => array('element_validate_number'),
+      '#element_validate' => array('form_validate_number'),
     );
 
     $form['icon']['popupAnchor'] = array(
@@ -291,7 +289,7 @@ class LeafletMap extends StylePluginBase {
       '#maxlength' => 3,
       '#size' => 3,
       '#default_value' => isset($this->options['icon']['popupAnchor']['x']) ? $this->options['icon']['popupAnchor']['x'] : '',
-      '#element_validate' => array('element_validate_number'),
+      '#element_validate' => array('form_validate_number'),
     );
 
     $form['icon']['popupAnchor']['y'] = array(
@@ -300,7 +298,7 @@ class LeafletMap extends StylePluginBase {
       '#maxlength' => 3,
       '#size' => 3,
       '#default_value' => isset($this->options['icon']['popupAnchor']['y']) ? $this->options['icon']['popupAnchor']['y'] : '',
-      '#element_validate' => array('element_validate_number'),
+      '#element_validate' => array('form_validate_number'),
     );
   }
 
@@ -308,8 +306,24 @@ class LeafletMap extends StylePluginBase {
    * Validates the options form.
    */
   public function validateOptionsForm(&$form, &$form_state) {
-    if (!is_numeric($form_state['values']['style_options']['height']) || $form_state['values']['style_options']['height'] < 0) {
-      form_error($form['height'], t('Map height needs to be a positive number'));
+    parent::validateOptionsForm($form, $form_state);
+
+    $style_options = $form_state['values']['style_options'];
+    if (!is_numeric($style_options['height']) || $style_options['height'] <= 0) {
+      form_error($form['height'], t('Map height needs to be a positive number.'));
+    }
+    $icon_options = $style_options['icon'];
+    if (!empty($icon_options['iconUrl']) && !valid_url($icon_options['iconUrl'])) {
+      form_error($form['icon']['iconUrl'], t('Icon URL is invalid.'));
+    }
+    if (!empty($icon_options['shadowUrl']) && !valid_url($icon_options['shadowUrl'])) {
+      form_error($form['icon']['shadowUrl'], t('Shadow URL is invalid.'));
+    }
+    if (!is_numeric($icon_options['iconSize']['x']) || $icon_options['iconSize']['x'] <= 0) {
+      form_error($form['icon']['iconSize']['x'], t('Icon width needs to be a positive number.'));
+    }
+    if (!is_numeric($icon_options['iconSize']['y']) || $icon_options['iconSize']['y'] <= 0) {
+      form_error($form['icon']['iconSize']['x'], t('Icon height needs to be a positive number.'));
     }
   }
 
@@ -317,10 +331,6 @@ class LeafletMap extends StylePluginBase {
    * Renders the View.
    */
   function render() {
-    
-    if (!empty($this->view->live_preview)) {
-      return t('Preview is not available for Leaflet map.');
-    }
     $data = array();
     $geofield_name = $this->options['data_source'];
     if ($this->options['data_source']) {
@@ -332,7 +342,7 @@ class LeafletMap extends StylePluginBase {
         if (empty($geofield_value)) {
           // In case the result is not among the raw results, get it from the
           // rendered results.
-          $geofield_value = leaflet_process_rendered_geofield($this->rendered_fields[$id][$geofield_name]);
+          $geofield_value = $this->rendered_fields[$id][$geofield_name];
         }
         if (!empty($geofield_value)) {
           $points = leaflet_process_geofield($geofield_value);

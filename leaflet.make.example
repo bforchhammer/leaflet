@@ -5,6 +5,6 @@ core = 8.x
 projects[libraries] = 1
 
 libraries[leaflet][download][type] = "get"
-libraries[leaflet][download][url] = "https://github.com/CloudMade/Leaflet/zipball/v0.5"
+libraries[leaflet][download][url] = "https://github.com/Leaflet/Leaflet/archive/master.zip"
 libraries[leaflet][directory_name] = "leaflet"
 libraries[leaflet][destination] = "libraries"

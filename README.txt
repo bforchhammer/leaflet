@@ -1,12 +1,15 @@
+
 This module provides integration with Leaflet map scripting library,
 http://leaflet.cloudmade.com.
 
-To use, you must download the leaflet library from
-http://leaflet.cloudmade.com/download.html or Github,
-http://github.com/CloudMade/Leaflet.
+To use it you must download the leaflet JS library from either
+http://leafletjs.com/download.html or
+GitHub, http://github.com/CloudMade/Leaflet
 
-In its current state, maps can be rendered via the included field formatter for
-Geofield or by using the API directly.
+In its current state, maps can be rendered as follows:
+o via the included field formatter for Geofield (drupal.org/project/geofield)
+o via Views (and Geofield)
+o by using the API directly.
 
 
 Installation
@@ -14,11 +17,11 @@ Installation
 
 1. Normal Drupal module installation
 
-2. Download the Leaflet library from http://leafletjs.com/. Leaflet 0.5 or higher
-   is recommended
+2. Download the Leaflet library from http://leafletjs.com/. Leaflet 0.6.x or
+   higher is recommended
 
-3. Enable leaflet_views for using Views and Leaflet (see below), or use the display formatters
-   for fields display.
+3. Enable leaflet_views for using Views and Leaflet (see below), or use the 
+   display formatters for fields display.
 
 
 API Usage
@@ -41,7 +44,7 @@ something like:
 $features = array(
   array(
     'type' => 'point',
-    'lat' => 1232,
+    'lat' => -12,
     'lon' => 123.45,
     'icon' => array(
       'iconUrl' => 'sites/default/files/mymarker.png
@@ -52,11 +55,11 @@ $features = array(
   array(
     'type' => 'linestring',
     'points' => array(
-      0 => array('lat' => 1324, 'lon' => 1232),
-      1 => array('lat' => 1324, 'lon' => 1232),
-      2 => array('lat' => 1324, 'lon' => 1232),
-      3 => array('lat' => 1324, 'lon' => 1232),
-      4 => array('lat' => 1324, 'lon' => 1232),
+      0 => array('lat' =>  13, 'lon' => 123),
+      1 => array('lat' =>  14, 'lon' => -123),
+      2 => array('lat' => -15, 'lon' => 123),
+      3 => array('lat' =>  16, 'lon' => 123),
+      4 => array('lat' => -17, 'lon' => 123),
     ),
     'popup' => l($node->title, 'node/' . $node->nid),
     'leaflet_id' => 'some unique ID'
@@ -76,16 +79,18 @@ Views integration
 
 To render a map using Views, enable the module leaflet_views.
 
-You need to add at least one geofield to the Fields list, and select the Leaflet Map style
-in Format.
+You need to add at least one geofield to the Fields list, and select the Leaflet
+Map style in Format.
 
-In the settings of the style, select the geofield as the Data Source and select a field for Title
-and Description (which will be rendered in the popup).
+In the settings of the style, select the geofield as the Data Source and select
+a field for Title and Description (which will be rendered in the popup).
 
-As a more powerful alternative, you can use node view modes to be rendered in the popup.
-In the Description field, select "<entire node>" and then select a View mode.
+As a more powerful alternative, you can use node view modes to be rendered in
+the popup. In the Description field, select "<entire node>" and then select a
+View mode.
 
-For a tutorial, please read http://marzeelabs.org/blog/2012/09/24/building-maps-in-drupal-using-leaflet-views/
+For a tutorial, please read
+http://marzeelabs.org/blog/2012/09/24/building-maps-in-drupal-using-leaflet-views
 
 Roadmap
 -------

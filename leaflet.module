@@ -1,6 +1,4 @@
 <?php
-require_once ('leaflet.formatters.inc');
-
 /**
  * Implements hook_theme().
  */
@@ -84,9 +82,8 @@ function leaflet_library_info() {
  */
 function leaflet_render_map($map, $features = array(), $height = '400px') {
   $map_id = drupal_html_id('leaflet_map');
-  drupal_add_library('leaflet', 'leaflet-drupal');
 
-  // Allow map definitions to provide a default icon
+  // Allow map definitions to provide a default icon.
   if (isset($map['icon']['iconUrl'])) {
     foreach ($features as &$feature) {
       if (!isset($feature['icon'])) {
@@ -94,13 +91,12 @@ function leaflet_render_map($map, $features = array(), $height = '400px') {
       }
     }
   }
-
   $settings[0] = array(
     'mapId' => $map_id,
     'map' => $map,
     'features' => $features,
   );
-
+  drupal_add_library('leaflet', 'leaflet-drupal');
   drupal_add_js(array('leaflet' => array($settings)), 'setting');
 
   return theme('leaflet_map', array('map_id' => $map_id, 'height' => $height));
@@ -179,6 +175,93 @@ function leaflet_leaflet_map_info() {
 }
 
 /**
+ * Convert a geofield into an array of map points.
+ *
+ * The map points can then be fed into leaflet_render_map().
+ *
+ * @param mixed $items
+ *   A single vlaue or array of geo values, each as a string in any of the
+ *   supported formats or as an array of $item elements, each with a
+ *   $item['wkt'] field.
+ *
+ * @return array
+ */
+function leaflet_process_geofield($items = array()) {
+
+  geophp_load();
+
+  if (!is_array($items)) {
+    $items = array($items);
+  }
+  $data = array();
+  foreach ($items as $item) {
+    // Auto-detect and parse the format (e.g. WKT, JSON etc)
+    if (!($geom = geoPHP::load(isset($item['wkt']) ? $item['wkt'] : $item))) {
+      continue;
+    }
+    $datum = array('type' => strtolower($geom->geometryType()));
+
+    switch ($datum['type']) {
+      case 'point':
+        $datum += array(
+          'lat' => $geom->getY(),
+          'lon' => $geom->getX(),
+        );
+        break;
+
+      case 'linestring':
+        $components = $geom->getComponents();
+        foreach ($components as $component) {
+          $datum['points'][] = array(
+            'lat' => $component->getY(),
+            'lon' => $component->getX(),
+          );
+        }
+        break;
+
+      case 'polygon':
+        $tmp = $geom->getComponents();
+        $components = $tmp[0]->getComponents();
+        foreach ($components as $component) {
+          $datum['points'][] = array(
+            'lat' => $component->getY(),
+            'lon' => $component->getX(),
+          );
+        }
+        break;
+
+      case 'multipolygon':
+      case 'multipolyline':
+      case 'multilinestring':
+        if ($datum['type'] == 'multilinestring') {
+          $datum['type'] = 'multipolyline';
+        }
+        if ($datum['type'] == 'multipolygon') {
+          $tmp = $geom->getComponents();
+          $components = $tmp[0]->getComponents();
+        }
+        else {
+          $components = $geom->getComponents();
+        }
+        foreach ($components as $key => $component) {
+          $subcomponents = $component->getComponents();
+          foreach ($subcomponents as $subcomponent) {
+            $datum['component'][$key]['points'][] = array(
+              'lat' => $subcomponent->getY(),
+              'lon' => $subcomponent->getX(),
+            );
+          }
+          unset($subcomponent);
+        }
+        break;
+    }
+    $data[] = $datum;
+  }
+
+  return $data;
+}
+
+/**
  * Implements hook_requirements().
  */
 function leaflet_requirements($phase) {
@@ -191,7 +274,7 @@ function leaflet_requirements($phase) {
     $requirements['leaflet'] = array(
       'title' => t('Leaflet library'),
       'value' => t('Installed. @maps available.', array(
-        '@maps' => format_plural(count(leaflet_map_get_info()),'One map', '@count maps'))),
+        '@maps' => format_plural(count(leaflet_map_get_info()), 'One map', '@count maps'))),
       'severity' => REQUIREMENT_OK,
     );
   }
