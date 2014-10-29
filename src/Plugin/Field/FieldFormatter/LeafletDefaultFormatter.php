@@ -230,7 +230,7 @@ class LeafletDefaultFormatter extends FormatterBase {
           $features[$key]['icon'] = $icon_url;
         }
       }
-      $elements[$delta] = array('#markup' => leaflet_render_map($map, $features, $settings['height'] . 'px'));
+      $elements[$delta] = leaflet_render_map($map, $features, $settings['height'] . 'px');
     }
     return $elements;
   }

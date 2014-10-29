@@ -5,7 +5,7 @@
 function leaflet_theme($existing, $type, $theme, $path) {
   return array(
     'leaflet_map' => array(
-      'arguments' => array('map_id' => NULL, 'height' => '400px'),
+      'variables' => array('map_id' => NULL, 'height' => '400px'),
       // When theme('leaflet_map'...) is called, the system will look for
       // /leaflet/templates/leaflet_map.html.twig.
       'template' => 'leaflet_map',
@@ -18,67 +18,13 @@ function leaflet_libraries_get_path($base) {
 }
 
 /**
- * Implements hook_library_info().
- */
-function leaflet_library_info() {
-  $leaflet_lib_path = leaflet_libraries_get_path('leaflet');
-
-  // Not sure this format is right for D8
-  $libraries['leaflet'] = array(
-    'title' => 'Leaflet',
-    'website' => 'http://leaflet.cloudmade.com',
-    'version' => '0.6',
-    'js' => array(
-      array(
-        'type' => 'inline',
-        'data' => 'L_ROOT_URL = "' . base_path() . $leaflet_lib_path . '/";',
-        'group' => JS_LIBRARY,
-        'preprocess' => FALSE
-      ),
-      array(
-        'type' => 'file',
-        'data' => "$leaflet_lib_path/leaflet.js",
-        'group' => JS_LIBRARY,
-        'preprocess' => FALSE
-      ),
-    ),
-    'css' => array(
-      "$leaflet_lib_path/leaflet.css" => array(
-        'type' => 'file',
-        'media' => 'screen',
-      ),
-      "$leaflet_lib_path/leaflet.ie.css" => array(
-        'browsers' => array(
-          'IE' => 'lte IE 8',
-          '!IE' => FALSE,
-        ),
-      ),
-    ),
-  );
-
-  $libraries['leaflet-drupal'] = array(
-    'title' => 'Leaflet initialization',
-    'website' => 'http://drupal.org/project/leaflet',
-    'version' => VERSION,
-    'js' => array(
-      drupal_get_path('module', 'leaflet') . '/leaflet.drupal.js' => array(),
-    ),
-    'dependencies' => array(
-      array('leaflet', 'leaflet'),
-    ),
-  );
-
-  return $libraries;
-}
-
-/**
  * Load all Leaflet required client files and return markup for a map.
  *
  * @param array $map
  * @param array $features
  * @param string $height
  *
- * @return string map markup
+ * @return array render array
  */
 function leaflet_render_map($map, $features = array(), $height = '400px') {
   $map_id = \Drupal\Component\Utility\Html::getUniqueId('leaflet_map');
@@ -96,10 +42,17 @@ function leaflet_render_map($map, $features = array(), $height = '400px') {
     'map' => $map,
     'features' => $features,
   );
-  drupal_add_library('leaflet', 'leaflet-drupal');
-  drupal_add_js(array('leaflet' => array($settings)), 'setting');
-
-  return theme('leaflet_map', array('map_id' => $map_id, 'height' => $height));
+  return array(
+    '#theme' => 'leaflet_map',
+    '#map_id' => $map_id,
+    '#height' => $height,
+    '#attached' => array(
+      'library' => array('leaflet/leaflet-drupal'),
+      'js' => array(
+        array('type' => 'setting', 'data' => array('leaflet' => array($settings))),
+      ),
+    ),
+  );
 }
 
 /**
