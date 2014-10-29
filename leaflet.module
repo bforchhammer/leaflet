@@ -14,7 +14,7 @@ function leaflet_theme($existing, $type, $theme, $path) {
 }
 
 function leaflet_libraries_get_path($base) {
-  return module_exists('libraries') ? libraries_get_path($base) : "sites/all/libraries/$base";
+  return Drupal::moduleHandler()->moduleExists('libraries') ? libraries_get_path($base) : "sites/all/libraries/$base";
 }
 
 /**
@@ -283,8 +283,8 @@ function leaflet_requirements($phase) {
       'title' => t('Leaflet library not found'),
       'value' => t('The !leaflet javascript library was not found. Please !download it into the libraries folder. Also ensure that the library is named leaflet with a lower case "l".',
         array(
-          '!leaflet' => l('leaflet', 'http://leaflet.cloudmade.com'),
-          '!download' => l('download', 'http://leaflet.cloudmade.com/download.html'),
+          '!leaflet' => Drupal::l('leaflet', \Drupal\Core\Url::fromUri('http://leaflet.cloudmade.com')),
+          '!download' => Drupal::l('download', \Drupal\Core\Url::fromUri('http://leaflet.cloudmade.com/download.html')),
         )
       ),
       'severity' => REQUIREMENT_ERROR,
