@@ -81,7 +81,7 @@ function leaflet_library_info() {
  * @return string map markup
  */
 function leaflet_render_map($map, $features = array(), $height = '400px') {
-  $map_id = drupal_html_id('leaflet_map');
+  $map_id = \Drupal\Component\Utility\Html::getUniqueId('leaflet_map');
 
   // Allow map definitions to provide a default icon.
   if (isset($map['icon']['iconUrl'])) {
@@ -115,16 +115,16 @@ function leaflet_map_get_info($map = NULL) {
   $map_info = &$drupal_static_fast['leaflet_map_info'];
 
   if (empty($map_info)) {
-    if ($cached = cache()->get('leaflet_map_info')) {
+    if ($cached = Drupal::cache()->get('leaflet_map_info')) {
       $map_info = $cached->data;
     }
     else {
-      $map_info = module_invoke_all('leaflet_map_info');
+      $map_info = Drupal::moduleHandler()->invokeAll('leaflet_map_info');
 
       // Let other modules alter the map info.
-      drupal_alter('leaflet_map_info', $map_info);
+      Drupal::moduleHandler()->alter('leaflet_map_info', $map_info);
 
-      cache()->set('leaflet_map_info', $map_info);
+      Drupal::cache()->set('leaflet_map_info', $map_info);
     }
   }
 
