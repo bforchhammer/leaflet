@@ -33,7 +33,7 @@ function leaflet_render_map($map, $features = array(), $height = '400px') {
       }
     }
   }
-  $settings[0] = array(
+  $settings[$map_id] = array(
     'mapId' => $map_id,
     'map' => $map,
     'features' => $features,
@@ -45,7 +45,7 @@ function leaflet_render_map($map, $features = array(), $height = '400px') {
     '#attached' => array(
       'library' => array('leaflet/leaflet-drupal'),
       'js' => array(
-        array('type' => 'setting', 'data' => array('leaflet' => array($settings))),
+        array('type' => 'setting', 'data' => array('leaflet' => $settings)),
       ),
     ),
   );

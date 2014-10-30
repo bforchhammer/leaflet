@@ -3,16 +3,14 @@
   Drupal.behaviors.leaflet = {
     attach:function (context, settings) {
 
-      $(settings.leaflet).each(function () {
-
-       for (var m in this) {
+      $.each(settings.leaflet, function (m, data) {
 
         // bail if the map already exists
-        var container = L.DomUtil.get(this[m].mapId);
+        var container = L.DomUtil.get(data.mapId);
         if (!container || container._leaflet) {
-          return false;
+          return true;
         }
-        var thismap = this[m].map;
+        var thismap = data.map;
         
         // load a settings object with all of our map settings
         var settings = {};
@@ -21,7 +19,7 @@
         }
 
         // instantiate our new map
-        var lMap = new L.Map(this[m].mapId, settings);
+        var lMap = new L.Map(data.mapId, settings);
 
         // add map layers
         var layers = {}, overlays = {};
@@ -40,8 +38,8 @@
         }
 
         // add features
-        for (i = 0; i < this[m].features.length; i++) {
-          var feature = this[m].features[i];
+        for (i = 0; i < data.features.length; i++) {
+          var feature = data.features[i];
           var lFeature;
 
           // dealing with a layer group
@@ -100,15 +98,14 @@
         }
 
         // add the leaflet map to our settings object to make it accessible
-        this[m].lMap = lMap;
+        data.lMap = lMap;
 
         // allow other modules to get access to the map object using jQuery's trigger method
         $(document).trigger('leaflet.map', [thismap, lMap]);
 
         // Destroy features so that an AJAX reload does not get parts of the old set.
         // Required when the View has "Use AJAX" set to Yes.
-        this[m].features = null;
-       }
+        data.features = null;
       });
 
       function leaflet_create_feature(feature) {
