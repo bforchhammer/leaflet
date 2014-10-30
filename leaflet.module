@@ -13,10 +13,6 @@ function leaflet_theme($existing, $type, $theme, $path) {
   );
 }
 
-function leaflet_libraries_get_path($base) {
-  return Drupal::moduleHandler()->moduleExists('libraries') ? libraries_get_path($base) : "sites/all/libraries/$base";
-}
-
 /**
  * Load all Leaflet required client files and return markup for a map.
  *
@@ -215,6 +211,13 @@ function leaflet_process_geofield($items = array()) {
 }
 
 /**
+ * Determines the base path for libraries.
+ */
+function leaflet_libraries_get_path() {
+  return Drupal::moduleHandler()->moduleExists('libraries') ? libraries_get_path('leaflet') : "libraries/leaflet";
+}
+
+/**
  * Implements hook_requirements().
  */
 function leaflet_requirements($phase) {
@@ -222,26 +225,41 @@ function leaflet_requirements($phase) {
   if ($phase != 'runtime') {
     return $requirements;
   }
-  // Ensure js library is installed. Show number of maps avaialble.
-  if (file_exists(leaflet_libraries_get_path('leaflet') . '/leaflet.js')) {
-    $requirements['leaflet'] = array(
-      'title' => t('Leaflet library'),
-      'value' => t('Installed. @maps available.', array(
-        '@maps' => format_plural(count(leaflet_map_get_info()), 'One map', '@count maps'))),
-      'severity' => REQUIREMENT_OK,
-    );
+  $library = Drupal::service('library.discovery')->getLibraryByName('leaflet', 'leaflet');
+
+  $requirements['leaflet'] = array(
+    'title' => Drupal::translation()->translate('Leaflet library')
+  );
+  $maps_info = Drupal::translation()->translate('@maps available.', array(
+    '@maps' => \Drupal::translation()->formatPlural(count(leaflet_map_get_info()), 'One map', '@count maps'))
+  );
+
+  // Check the defined type of the leaflet.js file; if it is external then
+  // assume that we are using a CDN version.
+  if ($library['js'][0]['type'] == 'external') {
+    $requirements['leaflet']['value'] = Drupal::translation()->translate('Using CDN version @version.', array(
+      '@version' => $library['version']
+    )) . ' ' . $maps_info;
+  }
+  // If leaflet.js is defined to be a local file, check that it exists and show
+  // an error if it does not exist.
+  else if (file_exists($library['js'][0]['data'])) {
+    $requirements['leaflet']['value'] = Drupal::translation()->translate('Leaflet @version library installed at @path.', array(
+        '@version' => $library['version'],
+        '@path' => $library['js'][0]['data'],
+    )) . ' ' . $maps_info;
+    $requirements['leaflet']['severity'] = REQUIREMENT_OK;
   }
   else {
-    $requirements['leaflet'] = array(
-      'title' => t('Leaflet library not found'),
-      'value' => t('The !leaflet javascript library was not found. Please !download it into the libraries folder. Also ensure that the library is named leaflet with a lower case "l".',
-        array(
-          '!leaflet' => Drupal::l('leaflet', \Drupal\Core\Url::fromUri('http://leaflet.cloudmade.com')),
-          '!download' => Drupal::l('download', \Drupal\Core\Url::fromUri('http://leaflet.cloudmade.com/download.html')),
-        )
-      ),
-      'severity' => REQUIREMENT_ERROR,
+    $requirements['leaflet']['value'] = Drupal::translation()->translate('Leaflet @version library not found at @path. Please !download it to @directory, or undo your changes to the libraries registry to use the CDN version.',
+      array(
+        '@version' => $library['version'],
+        '@path' => $library['js'][0]['data'],
+        '@directory' => dirname($library['js'][0]['data']),
+        '!download' => Drupal::l('download', \Drupal\Core\Url::fromUri($library['remote'])),
+      )
     );
+    $requirements['leaflet']['severity'] = REQUIREMENT_ERROR;
   }
 
   return $requirements;
