@@ -23,7 +23,7 @@ function leaflet_theme($existing, $type, $theme, $path) {
  * @return array render array
  */
 function leaflet_render_map($map, $features = array(), $height = '400px') {
-  $map_id = \Drupal\Component\Utility\Html::getUniqueId('leaflet_map');
+  $map_id = Drupal\Component\Utility\Html::getUniqueId('leaflet_map');
 
   // Allow map definitions to provide a default icon.
   if (isset($map['icon']['iconUrl'])) {
@@ -224,7 +224,7 @@ function leaflet_requirements($phase) {
     'title' => Drupal::translation()->translate('Leaflet library')
   );
   $maps_info = Drupal::translation()->translate('@maps available.', array(
-    '@maps' => \Drupal::translation()->formatPlural(count(leaflet_map_get_info()), 'One map', '@count maps'))
+    '@maps' => Drupal::translation()->formatPlural(count(leaflet_map_get_info()), 'One map', '@count maps'))
   );
 
   // Check the defined type of the leaflet.js file; if it is external then
@@ -249,7 +249,7 @@ function leaflet_requirements($phase) {
         '@version' => $library['version'],
         '@path' => $library['js'][0]['data'],
         '@directory' => dirname($library['js'][0]['data']),
-        '!download' => Drupal::l('download', \Drupal\Core\Url::fromUri($library['remote'])),
+        '!download' => Drupal::l('download', Drupal\Core\Url::fromUri($library['remote'])),
       )
     );
     $requirements['leaflet']['severity'] = REQUIREMENT_ERROR;

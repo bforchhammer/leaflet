@@ -29,8 +29,8 @@ use Drupal\views\Plugin\views\style\StylePluginBase;
  *   id = "leafet_map",
  *   title = @Translation("Leaflet map"),
  *   help = @Translation("Displays a View as a Leaflet map."),
- *   display_types = {"normal"}
- *   theme = "leaflet-map",
+ *   display_types = {"normal"},
+ *   theme = "leaflet-map"
  * )
  */
 class LeafletMap extends StylePluginBase {
