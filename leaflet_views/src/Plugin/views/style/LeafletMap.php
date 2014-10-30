@@ -29,26 +29,23 @@ use Drupal\views\Plugin\views\style\StylePluginBase;
  *   id = "leafet_map",
  *   title = @Translation("Leaflet map"),
  *   help = @Translation("Displays a View as a Leaflet map."),
- *   type = "normal",
+ *   display_types = {"normal"}
  *   theme = "leaflet-map",
- *   even_empty = TRUE
  * )
  */
 class LeafletMap extends StylePluginBase {
 
   /**
+   * Does the style plugin for itself support to add fields to it's output.
+   *
+   * @var bool
+   */
+  protected $usesFields = TRUE;
+
+  /**
    * If this view is displaying an entity, save the entity type and info.
    */
   public function init(ViewExecutable $view, DisplayPluginBase $display, array &$options = NULL) {
-
-    // Set these before calling parent::init() as it uses these.
-    $this->definition['even empty'] = TRUE; // cannot have space in annotation, so doing it here
-    $this->usesOptions = TRUE;
-    $this->usesRowPlugin = FALSE;
-    $this->usesRowClass = FALSE;
-    $this->usesGrouping = FALSE;
-    $this->usesFields = TRUE;
-
     parent::init($view, $display, $options);
 
     // For later use, set entity info related to the View's base table.
@@ -61,6 +58,14 @@ class LeafletMap extends StylePluginBase {
         return;
       }
     }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function evenEmpty() {
+    // Render map even if there is no data.
+    return TRUE;
   }
 
   /**
@@ -392,12 +397,10 @@ class LeafletMap extends StylePluginBase {
           }
         }
       }
-
-      if (!empty($data)) {
-        $map = leaflet_map_get_info($this->options['map']);
-        return leaflet_render_map($map, $data, $this->options['height'] . 'px');
-      }
     }
-    return '';
+
+    // Always render the map, even if we do not have any data.
+    $map = leaflet_map_get_info($this->options['map']);
+    return leaflet_render_map($map, $data, $this->options['height'] . 'px');
   }
 }

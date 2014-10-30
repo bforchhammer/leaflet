@@ -52,7 +52,7 @@ function leaflet_render_map($map, $features = array(), $height = '400px') {
 }
 
 /**
- * Get all avaialble Leaflet map definitions.
+ * Get all available Leaflet map definitions.
  *
  * @param string $map
  */
@@ -208,13 +208,6 @@ function leaflet_process_geofield($items = array()) {
   }
 
   return $data;
-}
-
-/**
- * Determines the base path for libraries.
- */
-function leaflet_libraries_get_path() {
-  return Drupal::moduleHandler()->moduleExists('libraries') ? libraries_get_path('leaflet') : "libraries/leaflet";
 }
 
 /**
