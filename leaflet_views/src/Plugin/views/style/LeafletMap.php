@@ -9,13 +9,9 @@ namespace Drupal\leaflet_views\Plugin\views\style;
 
 use Drupal\Component\Utility\UrlHelper;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\StringTranslation\StringTranslationTrait;
-use Drupal\field\Entity\FieldStorageConfig;
-use Drupal\views\Annotation\ViewsStyle;
-use Drupal\Core\Annotation\Translation;
-use Drupal\views\ViewExecutable;
 use Drupal\views\Plugin\views\display\DisplayPluginBase;
 use Drupal\views\Plugin\views\style\StylePluginBase;
+use Drupal\views\ViewExecutable;
 
 
 /**
@@ -27,11 +23,13 @@ use Drupal\views\Plugin\views\style\StylePluginBase;
  *
  * @ViewsStyle(
  *   id = "leafet_map",
- *   title = @Translation("Leaflet map"),
+ *   title = @Translation("Leaflet map (old style)"),
  *   help = @Translation("Displays a View as a Leaflet map."),
  *   display_types = {"normal"},
  *   theme = "leaflet-map"
  * )
+ *
+ * @deprecated Should be removed in favor of other plugins.
  */
 class LeafletMap extends StylePluginBase {
 
@@ -69,21 +67,6 @@ class LeafletMap extends StylePluginBase {
   }
 
   /**
-   * Set default options
-   */
-  protected function defineOptions() {
-    $options = parent::defineOptions();
-    $options['data_source'] = array('default' => '');
-    $options['name_field'] = array('default' => '');
-    $options['description_field'] = array('default' => '');
-    $options['view_mode'] = array('default' => 'full');
-    $options['map'] = array('default' => '');
-    $options['height'] = array('default' => '400');
-    $options['icon'] = array('default' => array());
-    return $options;
-  }
-
-  /**
    * Options form
    */
   public function buildOptionsForm(&$form, FormStateInterface $form_state) {
@@ -96,7 +79,8 @@ class LeafletMap extends StylePluginBase {
       $label = $handler->adminLabel() ?: $field_id;
       $fields[$field_id] = $label;
       if (is_a($handler, '\Drupal\field\Plugin\views\field\Field')) {
-        $field_storage_definitions = \Drupal::entityManager()->getFieldStorageDefinitions($handler->getEntityType());
+        $field_storage_definitions = \Drupal::entityManager()
+          ->getFieldStorageDefinitions($handler->getEntityType());
         $field_storage_definition = $field_storage_definitions[$handler->definition['field_name']];
 
         if ($field_storage_definition->getType() == 'geofield') {
@@ -153,7 +137,8 @@ class LeafletMap extends StylePluginBase {
 
       // Get the human readable labels for the entity view modes.
       $view_mode_options = array();
-      foreach (\Drupal::entityManager()->getViewModes($this->entity_type) as $key => $view_mode) {
+      foreach (\Drupal::entityManager()
+                 ->getViewModes($this->entity_type) as $key => $view_mode) {
         $view_mode_options[$key] = $view_mode['label'];
       }
       // The View Mode drop-down is visible conditional on "#rendered_entity"
@@ -167,7 +152,8 @@ class LeafletMap extends StylePluginBase {
         '#states' => array(
           'visible' => array(
             ':input[name="style_options[description_field]"]' => array(
-              'value' => '#rendered_entity')
+              'value' => '#rendered_entity'
+            )
           )
         )
       );
@@ -402,5 +388,20 @@ class LeafletMap extends StylePluginBase {
     // Always render the map, even if we do not have any data.
     $map = leaflet_map_get_info($this->options['map']);
     return leaflet_render_map($map, $data, $this->options['height'] . 'px');
+  }
+
+  /**
+   * Set default options
+   */
+  protected function defineOptions() {
+    $options = parent::defineOptions();
+    $options['data_source'] = array('default' => '');
+    $options['name_field'] = array('default' => '');
+    $options['description_field'] = array('default' => '');
+    $options['view_mode'] = array('default' => 'full');
+    $options['map'] = array('default' => '');
+    $options['height'] = array('default' => '400');
+    $options['icon'] = array('default' => array());
+    return $options;
   }
 }
