@@ -113,7 +113,7 @@
 
             // dealing with a layer group
             if (feature.group) {
-                var lGroup = this.create_feature_group();
+                var lGroup = this.create_feature_group(feature);
                 for (var groupKey in feature.features) {
                     var groupFeature = feature.features[groupKey];
                     lFeature = this.create_feature(groupFeature);
@@ -140,7 +140,7 @@
         }
     };
 
-    Drupal.Leaflet.prototype.create_feature_group = function (group) {
+    Drupal.Leaflet.prototype.create_feature_group = function (feature) {
         return new L.LayerGroup();
     };
 

@@ -101,6 +101,7 @@ class Leaflet extends StylePluginBase {
     foreach ($this->view->attachment_before as $id => $attachment) {
       if (!empty($attachment['#leaflet-attachment'])) {
         $features = array_merge($features, $attachment['rows']);
+        $this->view->element['#attached'] = NestedArray::mergeDeep($this->view->element['#attached'], $attachment['#attached']);
         unset($this->view->attachment_before[$id]);
       }
     }
