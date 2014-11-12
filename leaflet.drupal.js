@@ -128,7 +128,7 @@
                         lFeature = Drupal.leaflet.create_multipoly(feature);
                         break;
                     case 'json':
-                        lFeature = Drupal.leaflet.create_json(feature.json)
+                        lFeature = Drupal.leaflet.create_json(feature.json);
                         break;
                 }
 

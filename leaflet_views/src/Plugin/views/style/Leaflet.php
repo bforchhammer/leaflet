@@ -59,7 +59,7 @@ class Leaflet extends StylePluginBase {
       '#field_suffix' => $this->t('px'),
       '#size' => 4,
       '#default_value' => $this->options['height'],
-      '#required' => FALSE,
+      '#required' => TRUE,
     );
 
     // @todo add note about adding leaflet attachments for data points.
@@ -72,7 +72,7 @@ class Leaflet extends StylePluginBase {
     parent::validateOptionsForm($form, $form_state);
 
     $height = $form_state->getValue(array('style_options', 'height'));
-    if (!is_numeric($height) || $height <= 0) {
+    if (!empty($style_options['height']) && (!is_numeric($height) || $height <= 0)) {
       $form_state->setError($form['height'], $this->t('Map height needs to be a positive number.'));
     }
   }
