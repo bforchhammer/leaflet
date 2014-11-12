@@ -6,6 +6,7 @@
 
 namespace Drupal\leaflet_views\Plugin\views\style;
 
+use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\views\Plugin\views\style\StylePluginBase;
 
@@ -60,6 +61,8 @@ class Leaflet extends StylePluginBase {
       '#default_value' => $this->options['height'],
       '#required' => FALSE,
     );
+
+    // @todo add note about adding leaflet attachments for data points.
   }
 
   /**
@@ -86,7 +89,7 @@ class Leaflet extends StylePluginBase {
    * {@inheritdoc}
    */
   public function query() {
-    // Avoid querying the database.
+    // Avoid querying the database; all feature data comes from attachments.
     $this->built = TRUE;
   }
 
@@ -95,56 +98,52 @@ class Leaflet extends StylePluginBase {
    */
   public function render() {
     $features = array();
-    foreach ($this->view->attachment_before as $attachment) {
-      $args = $attachment['#arguments'];
-      array_unshift($args, $attachment['#display_id']);
-      array_unshift($args, $attachment['#name']);
-      $view_result = call_user_func_array('views_embed_view', $args);
-      $features = array_merge($features, $this->extract_features($view_result['#rows']));
+    foreach ($this->view->attachment_before as $id => $attachment) {
+      if (!empty($attachment['#leaflet-attachment'])) {
+        $features = array_merge($features, $attachment['rows']);
+        unset($this->view->attachment_before[$id]);
+      }
     }
 
-    $element = leaflet_render_map(leaflet_map_get_info($this->options['map']), $features, $this->options['height'] . 'px');
-    if ($this->view->preview) {
-      return '<pre>' . print_r($element, 1) . '</pre>';
+    $map_info = leaflet_map_get_info($this->options['map']);
+    // Enable layer control by default, if we have more than one feature group.
+    if (self::hasFeatureGroups($features)) {
+      $map_info['settings'] += array('layerControl' => TRUE);
     }
+    $element = leaflet_render_map($map_info, $features, $this->options['height'] . 'px');
+
+    // Merge #attached libraries.
+    $this->view->element['#attached'] = NestedArray::mergeDeep($this->view->element['#attached'], $element['#attached']);
+    $element['#attached'] =& $this->view->element['#attached'];
+
+    // @todo remove special casing for preview and simply render the proper map.
+    // Does not work currently, because views does not seem to load #attached
+    // stuff during preview. (Core bug?)
+    if ($this->view->preview) {
+      return array(
+        '#markup' => print_r($element, TRUE),
+        '#prefix' => '<pre>',
+        '#suffix' => '</pre>',
+      );
+    }
+
     return $element;
   }
 
-  protected function extract_features($data) {
-    if (isset($data['#leaflet'])) {
-      switch ($data['#leaflet']) {
-        case 'markers':
-          return $this->extract_features($data['#markers']);
-
-        case 'marker':
-          $points = $data['#points'];
-          foreach ($points as &$point) {
-            // @todo label?
-            $point['popup'] = $data['#popup']['body'];
-          }
-          return $points;
-
-        case 'LayerGroup':
-        case 'MarkerClusterGroup':
-          return array(
-            array(
-              'group' => TRUE,
-              'label' => $data['#title'],
-              'features' => $this->extract_features($data['#markers']),
-            )
-          );
-
-        default:
-          return array();
+  /**
+   * Checks whether the given array of features contains any groups, i.e.
+   * elements having the "group" key set to TRUE.
+   *
+   * @param array $features
+   * @return bool
+   */
+  protected static function hasFeatureGroups(array $features) {
+    foreach ($features as $feature) {
+      if (!empty($feature['group'])) {
+        return TRUE;
       }
     }
-    else {
-      $features = array();
-      foreach ($data as $row) {
-        $features = array_merge($features, $this->extract_features($row));
-      }
-      return $features;
-    }
+    return FALSE;
   }
 
   /**

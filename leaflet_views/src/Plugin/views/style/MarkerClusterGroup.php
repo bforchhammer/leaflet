@@ -16,7 +16,7 @@ namespace Drupal\leaflet_views\Plugin\views\style;
  *   id = "leaflet_marker_cluster",
  *   title = @Translation("Clustered Markers"),
  *   help = @Translation("Render data as leaflet marker clusters."),
- *   display_types = {"leaflet"},
+ *   display_types = {"leaflet"}
  * )
  */
 class MarkerClusterGroup extends MarkerLayerGroup {
@@ -24,10 +24,12 @@ class MarkerClusterGroup extends MarkerLayerGroup {
   /**
    * {@inheritdoc}
    */
-  protected function renderRowGroup(array $rows = array()) {
+  protected function renderLeafletGroup(array $features = array(), $title = '', $level = 0) {
     return array(
-      '#leaflet' => 'MarkerClusterGroup',
-      '#markers' => $rows,
+      'group' => TRUE,
+      'label' => $title,
+      'features' => $features,
     );
   }
+
 }

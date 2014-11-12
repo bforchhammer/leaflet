@@ -18,7 +18,6 @@ use Drupal\views\ViewExecutable;
  *   id = "leaflet_marker",
  *   title = @Translation("Leaflet Marker"),
  *   help = @Translation("Display the row as a leaflet marker."),
- *   theme = "leaflet-marker",
  *   display_types = {"leaflet"},
  * )
  */
@@ -36,6 +35,9 @@ class LeafletMarker extends RowPluginBase {
    */
   protected $usesFields = TRUE;
 
+  /**
+   * @var string The main entity type id for the view base table.
+   */
   protected $entityTypeId;
 
   /**
@@ -49,6 +51,9 @@ class LeafletMarker extends RowPluginBase {
     $this->entityTypeId = $views_definition['table']['entity type'];
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function buildOptionsForm(&$form, FormStateInterface $form_state) {
     parent::buildOptionsForm($form, $form_state);
 
@@ -142,6 +147,9 @@ class LeafletMarker extends RowPluginBase {
     }
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function render($row) {
     $geofield_value = $this->view->getStyle()
       ->getField($row->index, $this->options['data_source']);
@@ -150,39 +158,49 @@ class LeafletMarker extends RowPluginBase {
       return FALSE;
     }
 
-    $result = array('#leaflet' => 'marker');
-
     // @todo This assumes that the use has selected WKT as the geofield output
     // formatter in the views field settings, and fails otherwise. Very brittle.
-    $result['#points'] = leaflet_process_geofield($geofield_value);
+    $result = leaflet_process_geofield($geofield_value);
 
     // Render the entity with the selected view mode
+    $popup_body = '';
     if ($this->options['description_field'] === '#rendered_entity' && is_object($row->_entity)) {
       $entity = $row->_entity;
       $build = entity_view($entity, $this->options['view_mode']);
-      $result['#popup']['body'] = drupal_render($build);
+      $popup_body = drupal_render($build);
     }
     // Normal rendering via fields
     elseif ($this->options['description_field']) {
-      $result['#popup']['body'] = $this->view->getStyle()
+      $popup_body = $this->view->getStyle()
         ->getField($row->index, $this->options['description_field']);
     }
 
-    $result['#popup']['label'] = $this->view->getStyle()
+    $label = $this->view->getStyle()
       ->getField($row->index, $this->options['name_field']);
+
+    foreach ($result as &$point) {
+      $point['popup'] = $popup_body;
+      $point['label'] = $label;
+    }
 
     return $result;
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function validate() {
     $errors = parent::validate();
-    // @todo raise validation error if we have geofield.
+    // @todo raise validation error if we have no geofield.
     if (empty($this->options['data_source'])) {
       $errors[] = $this->t('Row @row requires the data source to be configured.', array('@row' => $this->definition['title']));
     }
     return $errors;
   }
 
+  /**
+   * {@inheritdoc}
+   */
   protected function defineOptions() {
     $options = parent::defineOptions();
 

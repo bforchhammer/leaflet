@@ -8,6 +8,7 @@ namespace Drupal\leaflet_views\Plugin\views\display;
 
 
 use Drupal\views\Plugin\views\display\Attachment;
+use Drupal\views\ViewExecutable;
 
 /**
  * The plugin which handles attachment of additional leaflet features to
@@ -19,8 +20,6 @@ use Drupal\views\Plugin\views\display\Attachment;
  *   id = "leaflet_attachment",
  *   title = @Translation("Leaflet Attachment"),
  *   help = @Translation("Add additional markers to a leaflet map."),
- *   theme = "leaflet-attachment",
- *   contextual_links_locations = {""}
  * )
  */
 class LeafletAttachment extends Attachment {
@@ -53,6 +52,54 @@ class LeafletAttachment extends Attachment {
     return FALSE;
   }
 
+
+  /**
+   * {@inheritdoc}
+   */
+  public function attachTo(ViewExecutable $view, $display_id, array &$build) {
+    $displays = $this->getOption('displays');
+
+    if (empty($displays[$display_id])) {
+      return;
+    }
+
+    if (!$this->access()) {
+      return;
+    }
+
+    $args = $this->getOption('inherit_arguments') ? $this->view->args : array();
+    $view->setArguments($args);
+    $view->setDisplay($this->display['id']);
+    if ($this->getOption('inherit_pager')) {
+      $view->display_handler->usesPager = $this->view->displayHandlers->get($display_id)
+        ->usesPager();
+      $view->display_handler->setOption('pager', $this->view->displayHandlers->get($display_id)
+        ->getOption('pager'));
+    }
+    $this->view->attachment_before[] = $view->render() + array(
+        '#leaflet-attachment' => TRUE,
+      );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function render() {
+    $rows = (!empty($this->view->result) || $this->view->style_plugin->evenEmpty()) ? $this->view->style_plugin->render($this->view->result) : array();
+
+    // The element is rendered during preview only; when used as an attachment
+    // in the Leaflet class, only the 'rows' property is used.
+    $element = array(
+      '#markup' => print_r($rows, TRUE),
+      '#prefix' => '<pre>',
+      '#suffix' => '</pre>',
+      '#attached' => &$this->view->element['#attached'],
+      'rows' => $rows,
+    );
+
+    return $element;
+  }
+
   /**
    * {@inheritdoc}
    */
@@ -72,5 +119,4 @@ class LeafletAttachment extends Attachment {
 
     return $options;
   }
-
 }

@@ -74,7 +74,10 @@
 
                 // add layer switcher
                 if (thismap.settings.layerControl) {
-                    lMap.addControl(new L.Control.Layers(layers, overlays));
+                    // Only add base-layers if we have more than one, i.e. if there actually is a choice.
+                    var _layers = layers.length > 1 ? layers : [];
+                    // Instantiate layer control, using settings.layerControl as settings.
+                    lMap.addControl(new L.Control.Layers(_layers, overlays, thismap.settings.layerControl));
                 }
 
                 // center the map

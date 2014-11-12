@@ -42,10 +42,23 @@ class MarkerLayerGroup extends MarkerDefault {
   public function renderGrouping($records, $groupings = array(), $group_rendered = NULL) {
     $sets = parent::renderGrouping($records, $groupings, $group_rendered);
     if (!$groupings) {
+      // Set group label to display label, if empty.
       $attachment_title = $this->view->getDisplay()->getOption('title');
       $sets['']['group'] = $attachment_title ? $attachment_title : $this->t('Label missing');
     }
     return $sets;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function renderLeafletGroup(array $features = array(), $title = '', $level = 0) {
+    // $this->view->element['#attached']['library'][] = array();
+    return array(
+      'group' => TRUE,
+      'label' => $title,
+      'features' => $features,
+    );
   }
 
   /**
@@ -56,13 +69,4 @@ class MarkerLayerGroup extends MarkerDefault {
     // Add group options.
   }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function renderRowGroup(array $rows = array()) {
-    return array(
-      '#leaflet' => 'LayerGroup',
-      '#markers' => $rows,
-    );
-  }
 }
