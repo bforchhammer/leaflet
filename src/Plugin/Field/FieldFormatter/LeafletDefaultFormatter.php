@@ -135,7 +135,7 @@ class LeafletDefaultFormatter extends FormatterBase {
       '#type' => 'textfield',
       '#maxlength' => 3,
       '#size' => 3,
-      '#default_value' => $icon['icon_anchor']['y'],
+      '#default_value' => $icon['icon_anchor']['x'],
       '#element_validate' => array('form_validate_number'),
     );
     $elements['icon']['icon_anchor']['y'] = array(

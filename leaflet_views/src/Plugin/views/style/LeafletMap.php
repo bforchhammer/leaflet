@@ -178,7 +178,7 @@ class LeafletMap extends StylePluginBase {
       '#field_suffix' => $this->t('px'),
       '#size' => 4,
       '#default_value' => $this->options['height'],
-      '#required' => FALSE,
+      '#required' => TRUE,
     );
 
     $form['icon'] = array(
@@ -308,10 +308,8 @@ class LeafletMap extends StylePluginBase {
   public function validateOptionsForm(&$form, FormStateInterface $form_state) {
     parent::validateOptionsForm($form, $form_state);
 
-    // @todo Validation fails if fields are left empty; should probably just
-    //       pass and use defaults.
     $style_options = $form_state->getValue('style_options');
-    if (!is_numeric($style_options['height']) || $style_options['height'] <= 0) {
+    if (!empty($style_options['height']) && (!is_numeric($style_options['height']) || $style_options['height'] <= 0)) {
       $form_state->setError($form['height'], $this->t('Map height needs to be a positive number.'));
     }
     $icon_options = $style_options['icon'];
@@ -321,11 +319,11 @@ class LeafletMap extends StylePluginBase {
     if (!empty($icon_options['shadowUrl']) && !UrlHelper::isValid($icon_options['shadowUrl'])) {
       $form_state->setError($form['icon']['shadowUrl'], $this->t('Shadow URL is invalid.'));
     }
-    if (!is_numeric($icon_options['iconSize']['x']) || $icon_options['iconSize']['x'] <= 0) {
+    if (!empty($icon_options['iconSize']['x']) && (!is_numeric($icon_options['iconSize']['x']) || $icon_options['iconSize']['x'] <= 0)) {
       $form_state->setError($form['icon']['iconSize']['x'], $this->t('Icon width needs to be a positive number.'));
     }
-    if (!is_numeric($icon_options['iconSize']['y']) || $icon_options['iconSize']['y'] <= 0) {
-      $form_state->setError($form['icon']['iconSize']['x'], $this->t('Icon height needs to be a positive number.'));
+    if (!empty($icon_options['iconSize']['y']) && (!is_numeric($icon_options['iconSize']['y']) || $icon_options['iconSize']['y'] <= 0)) {
+      $form_state->setError($form['icon']['iconSize']['y'], $this->t('Icon height needs to be a positive number.'));
     }
   }
 
