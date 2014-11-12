@@ -5,7 +5,11 @@
 function leaflet_theme($existing, $type, $theme, $path) {
   return array(
     'leaflet_map' => array(
-      'variables' => array('map_id' => NULL, 'height' => '400px'),
+      'variables' => array(
+        'map_id' => NULL,
+        'height' => '400px',
+        'map' => array(),
+      ),
       // When theme('leaflet_map'...) is called, the system will look for
       // /leaflet/templates/leaflet_map.html.twig.
       'template' => 'leaflet_map',
@@ -42,6 +46,7 @@ function leaflet_render_map($map, $features = array(), $height = '400px') {
     '#theme' => 'leaflet_map',
     '#map_id' => $map_id,
     '#height' => $height,
+    '#map' => $map,
     '#attached' => array(
       'library' => array('leaflet/leaflet-drupal'),
       'js' => array(
