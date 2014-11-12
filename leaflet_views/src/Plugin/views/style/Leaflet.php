@@ -116,17 +116,6 @@ class Leaflet extends StylePluginBase {
     $this->view->element['#attached'] = NestedArray::mergeDeep($this->view->element['#attached'], $element['#attached']);
     $element['#attached'] =& $this->view->element['#attached'];
 
-    // @todo remove special casing for preview and simply render the proper map.
-    // Does not work currently, because views does not seem to load #attached
-    // stuff during preview. (Core bug?)
-    if ($this->view->preview) {
-      return array(
-        '#markup' => print_r($element, TRUE),
-        '#prefix' => '<pre>',
-        '#suffix' => '</pre>',
-      );
-    }
-
     return $element;
   }
 
