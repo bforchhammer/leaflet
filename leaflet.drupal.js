@@ -55,18 +55,12 @@
             this.add_base_layer(key, layer);
         }
 
-        // Center the map.
-        if (this.map_definition.center) {
+        // Set initial view, fallback to displaying the whole world.
+        if (this.map_definition.center && this.settings.zoom) {
             this.lMap.setView(new L.LatLng(this.map_definition.center.lat, this.map_definition.center.lon), this.settings.zoom);
         }
-        // If we have provided a zoom level, then use it after fitting bounds.
-        else if (this.settings.zoom) {
-            this.fitbounds();
-            this.lMap.setZoom(this.settings.zoom);
-        }
-        // Fit to bounds.
         else {
-            this.fitbounds();
+            this.lMap.fitWorld();
         }
 
         // Add attribution
@@ -154,8 +148,11 @@
             }
 
             // Allow others to do something with the feature that was just added to the map
-            $(document).trigger('leaflet.feature', [lFeature, feature]);
+            $(document).trigger('leaflet.feature', [lFeature, feature, this]);
         }
+
+        // Fit bounds after adding features.
+        this.fitbounds();
     };
 
     Drupal.Leaflet.prototype.create_feature_group = function (feature) {
@@ -332,6 +329,10 @@
     Drupal.Leaflet.prototype.fitbounds = function () {
         if (this.bounds.length > 0) {
             this.lMap.fitBounds(new L.LatLngBounds(this.bounds));
+        }
+        // If we have provided a zoom level, then use it after fitting bounds.
+        if (this.settings.zoom) {
+            this.lMap.setZoom(this.settings.zoom);
         }
     };
 
