@@ -37,8 +37,8 @@
         this.map_definition = map_definition;
         this.settings = this.map_definition.settings;
         this.bounds = [];
-        this.base_layers = [];
-        this.overlays = [];
+        this.base_layers = {};
+        this.overlays = {};
         this.lMap = null;
         this.layer_control = null;
 
@@ -53,15 +53,6 @@
         for (var key in this.map_definition.layers) {
             var layer = this.map_definition.layers[key];
             this.add_base_layer(key, layer);
-        }
-
-        // Add a layer switcher.
-        if (this.settings.layerControl) {
-            // Only add base-layers if we have more than one, i.e. if there actually is a choice.
-            var _layers = this.base_layers.length > 1 ? this.base_layers : [];
-            // Instantiate layer control, using settings.layerControl as settings.
-            this.layer_control = new L.Control.Layers(_layers, this.overlays, this.settings.layerControl);
-            this.lMap.addControl(this.layer_control);
         }
 
         // Center the map.
@@ -88,13 +79,34 @@
         $(document).trigger('leaflet.map', [this.map_definition, this.lMap, this]);
     };
 
+    Drupal.Leaflet.prototype.initialise_layer_control = function () {
+        var count_layers = function (obj) {
+            // Browser compatibility: Chrome, IE 9+, FF 4+, or Safari 5+
+            // @see http://kangax.github.com/es5-compat-table/
+            return Object.keys(obj).length;
+        };
+
+        // Only add a layer switcher if it is enabled in settings, and we have
+        // at least two base layers or at least one overlay.
+        if (this.layer_control == null && this.settings.layerControl && (count_layers(this.base_layers) > 1 || count_layers(this.overlays) > 0)) {
+            // Only add base-layers if we have more than one, i.e. if there actually is a choice.
+            var _layers = this.base_layers.length > 1 ? this.base_layers : [];
+            // Instantiate layer control, using settings.layerControl as settings.
+            this.layer_control = new L.Control.Layers(_layers, this.overlays, this.settings.layerControl);
+            this.lMap.addControl(this.layer_control);
+        }
+    };
+
     Drupal.Leaflet.prototype.add_base_layer = function (key, definition) {
         var map_layer = this.create_layer(definition, key);
         this.base_layers[key] = map_layer;
         this.lMap.addLayer(map_layer);
 
-        // If we already have a layer control, add the new base layer to it.
-        if (this.layer_control != null) {
+        if (this.layer_control == null) {
+            this.initialise_layer_control();
+        }
+        else {
+            // If we already have a layer control, add the new base layer to it.
             this.layer_control.addBaseLayer(map_layer, key);
         }
     };
@@ -103,8 +115,11 @@
         this.overlays[label] = layer;
         this.lMap.addLayer(layer);
 
-        // If we already have a layer control, add the new overlay to it.
-        if (this.layer_control != null) {
+        if (this.layer_control == null) {
+            this.initialise_layer_control();
+        }
+        else {
+            // If we already have a layer control, add the new overlay to it.
             this.layer_control.addOverlay(layer, label);
         }
     };
