@@ -4,22 +4,25 @@
         attach: function (context, settings) {
 
             $.each(settings.leaflet, function (m, data) {
-                var $container = $('#' + data.mapId, context);
+                $('#' + data.mapId, context).each(function () {
+                    var $container = $(this);
 
-                // If the attached context contains any leaflet maps, make sure we have a Drupal.leaflet_widget object.
-                if ($container.data('leaflet') == undefined) {
-                    $container.data('leaflet', new Drupal.Leaflet(L.DomUtil.get(data.mapId), data.mapId, data.map));
-                    $container.data('leaflet').add_features(data.features);
+                    // If the attached context contains any leaflet maps, make sure we have a Drupal.leaflet_widget object.
+                    if ($container.data('leaflet') == undefined) {
+                        $container.data('leaflet', new Drupal.Leaflet(L.DomUtil.get(data.mapId), data.mapId, data.map));
+                        $container.data('leaflet').add_features(data.features);
 
-                    // Add the leaflet map to our settings object to make it accessible
-                    data.lMap = $container.data('leaflet').lMap;
-                }
-                else {
-                    // If we already had a map instance, add new features.
-                    // @todo Does this work? Needs testing.
-                    $container.data('leaflet').add_features(data.features);
-                }
-
+                        // Add the leaflet map to our settings object to make it accessible
+                        data.lMap = $container.data('leaflet').lMap;
+                    }
+                    else {
+                        // If we already had a map instance, add new features.
+                        // @todo Does this work? Needs testing.
+                        if (data.features != undefined) {
+                            $container.data('leaflet').add_features(data.features);
+                        }
+                    }
+                });
                 // Destroy features so that an AJAX reload does not get parts of the old set.
                 // Required when the View has "Use AJAX" set to Yes.
                 // @todo Is this still necessary? Needs testing.
