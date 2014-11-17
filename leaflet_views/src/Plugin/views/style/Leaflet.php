@@ -18,7 +18,7 @@ use Drupal\views\Plugin\views\style\StylePluginBase;
  * Attributes set below end up in the $this->definition[] array.
  *
  * @ViewsStyle(
- *   id = "leafet",
+ *   id = "leaflet",
  *   title = @Translation("Leaflet"),
  *   help = @Translation("Displays a View as a Leaflet map."),
  *   display_types = {"normal"},

@@ -23,7 +23,7 @@ use Drupal\views\ViewExecutable;
  *
  * @ViewsStyle(
  *   id = "leafet_map",
- *   title = @Translation("Leaflet map (old style)"),
+ *   title = @Translation("Leaflet map (old)"),
  *   help = @Translation("Displays a View as a Leaflet map."),
  *   display_types = {"normal"},
  *   theme = "leaflet-map"
