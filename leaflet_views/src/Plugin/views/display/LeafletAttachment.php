@@ -114,8 +114,10 @@ class LeafletAttachment extends Attachment {
     $options = parent::defineOptions();
 
     // Overrides for standard stuff.
-    $options['style']['contains']['type']['default'] = 'leaflet';
+    $options['style']['contains']['type']['default'] = 'leaflet_marker_default';
     $options['defaults']['default']['style'] = FALSE;
+    $options['row']['contains']['type']['default'] = 'leaflet_marker';
+    $options['defaults']['default']['row'] = FALSE;
 
     return $options;
   }
