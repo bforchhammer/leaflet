@@ -129,10 +129,12 @@
                 for (var groupKey in feature.features) {
                     var groupFeature = feature.features[groupKey];
                     lFeature = this.create_feature(groupFeature);
-                    if (groupFeature.popup) {
-                        lFeature.bindPopup(groupFeature.popup);
+                    if (lFeature != undefined) {
+                        if (groupFeature.popup) {
+                            lFeature.bindPopup(groupFeature.popup);
+                        }
+                        lGroup.addLayer(lFeature);
                     }
-                    lGroup.addLayer(lFeature);
                 }
 
                 // Add the group to the layer switcher.
@@ -140,10 +142,12 @@
             }
             else {
                 lFeature = this.create_feature(feature);
-                this.lMap.addLayer(lFeature);
+                if (lFeature != undefined) {
+                    this.lMap.addLayer(lFeature);
 
-                if (feature.popup) {
-                    lFeature.bindPopup(feature.popup);
+                    if (feature.popup) {
+                        lFeature.bindPopup(feature.popup);
+                    }
                 }
             }
 
