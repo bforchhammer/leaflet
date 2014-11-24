@@ -76,9 +76,11 @@ class LeafletAttachment extends Attachment {
       $view->display_handler->setOption('pager', $this->view->displayHandlers->get($display_id)
         ->getOption('pager'));
     }
-    $this->view->attachment_before[] = $view->render() + array(
-        '#leaflet-attachment' => TRUE,
-      );
+    if ($render = $view->render()) {
+      $this->view->attachment_before[] = $render + array(
+          '#leaflet-attachment' => TRUE,
+        );
+    }
   }
 
   /**

@@ -67,14 +67,20 @@ class MarkerDefault extends StylePluginBase {
         $set['features'] = array_merge($set['features'], $group);
       }
 
-      $featureGroup = $this->renderLeafletGroup($set['features'], $set['group'], $level);
-      // If the rendered "feature group" is actually only a list of features,
-      // merge them into the output; else simply append the feature group.
-      if (empty($featureGroup['group'])) {
-        $output = array_merge($output, $featureGroup);
+      // Abort if we haven't managed to build any features.
+      if (empty($set['features'])) {
+        continue;
       }
-      else {
-        $output[] = $featureGroup;
+
+      if ($featureGroup = $this->renderLeafletGroup($set['features'], $set['group'], $level)) {
+        // If the rendered "feature group" is actually only a list of features,
+        // merge them into the output; else simply append the feature group.
+        if (empty($featureGroup['group'])) {
+          $output = array_merge($output, $featureGroup);
+        }
+        else {
+          $output[] = $featureGroup;
+        }
       }
     }
     unset($this->view->row_index);
