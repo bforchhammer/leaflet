@@ -21,6 +21,9 @@ use Drupal\views\ViewExecutable;
  *   title = @Translation("Leaflet Attachment"),
  *   help = @Translation("Add additional markers to a leaflet map."),
  * )
+ *
+ * @todo We only use very few features from the parent class Attachment, so this
+ *       should probably just extend DisplayPluginBase to simplify things.
  */
 class LeafletAttachment extends Attachment {
 
@@ -51,7 +54,6 @@ class LeafletAttachment extends Attachment {
   public function usesLinkDisplay() {
     return FALSE;
   }
-
 
   /**
    * {@inheritdoc}
