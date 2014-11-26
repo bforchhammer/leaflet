@@ -56,8 +56,8 @@
         }
 
         // Set initial view, fallback to displaying the whole world.
-        if (this.map_definition.center && this.settings.zoom) {
-            this.lMap.setView(new L.LatLng(this.map_definition.center.lat, this.map_definition.center.lon), this.settings.zoom);
+        if (this.settings.center && this.settings.zoom) {
+            this.lMap.setView(new L.LatLng(this.settings.center.lat, this.settings.center.lng), this.settings.zoom);
         }
         else {
             this.lMap.fitWorld();
