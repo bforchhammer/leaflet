@@ -229,34 +229,39 @@
         return map_layer;
     };
 
+    Drupal.Leaflet.prototype.create_icon = function(options) {
+        var icon = new L.Icon({iconUrl: options.iconUrl});
+
+        // override applicable marker defaults
+        if (options.iconSize) {
+          icon.options.iconSize = new L.Point(parseInt(options.iconSize.x), parseInt(options.iconSize.y));
+        }
+        if (options.iconAnchor) {
+          icon.options.iconAnchor = new L.Point(parseFloat(options.iconAnchor.x), parseFloat(options.iconAnchor.y));
+        }
+        if (options.popupAnchor) {
+          icon.options.popupAnchor = new L.Point(parseFloat(options.popupAnchor.x), parseFloat(options.popupAnchor.y));
+        }
+        if (options.shadowUrl !== undefined) {
+          icon.options.shadowUrl = options.shadowUrl;
+        }
+        if (options.shadowSize) {
+          icon.options.shadowSize = new L.Point(parseInt(options.shadowSize.x), parseInt(options.shadowSize.y));
+        }
+        if (options.shadowAnchor) {
+          icon.options.shadowAnchor = new L.Point(parseInt(options.shadowAnchor.x), parseInt(options.shadowAnchor.y));
+        }
+
+        return icon;
+    };
+
     Drupal.Leaflet.prototype.create_point = function (marker) {
         var latLng = new L.LatLng(marker.lat, marker.lon);
         this.bounds.push(latLng);
         var lMarker;
 
         if (marker.icon) {
-            var icon = new L.Icon({iconUrl: marker.icon.iconUrl});
-
-            // override applicable marker defaults
-            if (marker.icon.iconSize) {
-                icon.options.iconSize = new L.Point(parseInt(marker.icon.iconSize.x), parseInt(marker.icon.iconSize.y));
-            }
-            if (marker.icon.iconAnchor) {
-                icon.options.iconAnchor = new L.Point(parseFloat(marker.icon.iconAnchor.x), parseFloat(marker.icon.iconAnchor.y));
-            }
-            if (marker.icon.popupAnchor) {
-                icon.options.popupAnchor = new L.Point(parseFloat(marker.icon.popupAnchor.x), parseFloat(marker.icon.popupAnchor.y));
-            }
-            if (marker.icon.shadowUrl !== undefined) {
-                icon.options.shadowUrl = marker.icon.shadowUrl;
-            }
-            if (marker.icon.shadowSize) {
-                icon.options.shadowSize = new L.Point(parseInt(marker.icon.shadowSize.x), parseInt(marker.icon.shadowSize.y));
-            }
-            if (marker.icon.shadowAnchor) {
-                icon.options.shadowAnchor = new L.Point(parseInt(marker.icon.shadowAnchor.x), parseInt(marker.icon.shadowAnchor.y));
-            }
-
+            var icon = this.create_icon(marker.icon);
             lMarker = new L.Marker(latLng, {icon: icon});
         }
         else {
