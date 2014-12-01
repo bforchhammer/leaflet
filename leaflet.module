@@ -40,7 +40,8 @@ function leaflet_render_map($map, $features = array(), $height = '400px') {
   $settings[$map_id] = array(
     'mapId' => $map_id,
     'map' => $map,
-    'features' => $features,
+    // JS only works with arrays, make sure we have one with numeric keys.
+    'features' => array_values($features),
   );
   return array(
     '#theme' => 'leaflet_map',
@@ -98,33 +99,33 @@ function leaflet_map_get_info($map = NULL) {
 function leaflet_leaflet_map_info() {
   return array(
     'OSM Mapnik' =>
-    array(
-      'label' => 'OSM Mapnik',
-      'description' => t('Leaflet default map.'),
-      'settings' => array(
-        // 'zoom' => 18,
-        'minZoom' => 0,
-        'maxZoom' => 18,
-        'dragging' => TRUE,
-        'touchZoom' => TRUE,
-        'scrollWheelZoom' => TRUE,
-        'doubleClickZoom' => TRUE,
-        'zoomControl' => TRUE,
-        'attributionControl' => TRUE,
-        'trackResize' => TRUE,
-        'fadeAnimation' => TRUE,
-        'zoomAnimation' => TRUE,
-        'closePopupOnClick' => TRUE,
-      ),
-      'layers' => array(
-        'earth' => array(
-          'urlTemplate' => 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-          'options' => array(
-            'attribution' => 'OSM Mapnik'
-          )
+      array(
+        'label' => 'OSM Mapnik',
+        'description' => t('Leaflet default map.'),
+        'settings' => array(
+          // 'zoom' => 18,
+          'minZoom' => 0,
+          'maxZoom' => 18,
+          'dragging' => TRUE,
+          'touchZoom' => TRUE,
+          'scrollWheelZoom' => TRUE,
+          'doubleClickZoom' => TRUE,
+          'zoomControl' => TRUE,
+          'attributionControl' => TRUE,
+          'trackResize' => TRUE,
+          'fadeAnimation' => TRUE,
+          'zoomAnimation' => TRUE,
+          'closePopupOnClick' => TRUE,
+        ),
+        'layers' => array(
+          'earth' => array(
+            'urlTemplate' => 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+            'options' => array(
+              'attribution' => 'OSM Mapnik'
+            )
+          ),
         ),
       ),
-    ),
   );
 }
 

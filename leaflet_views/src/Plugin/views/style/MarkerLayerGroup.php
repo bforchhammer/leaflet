@@ -53,7 +53,6 @@ class MarkerLayerGroup extends MarkerDefault {
    * {@inheritdoc}
    */
   protected function renderLeafletGroup(array $features = array(), $title = '', $level = 0) {
-    // $this->view->element['#attached']['library'][] = array();
     return array(
       'group' => TRUE,
       'label' => $title,

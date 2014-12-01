@@ -9,6 +9,7 @@ namespace Drupal\leaflet_views\Plugin\views\row;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\views\Plugin\views\display\DisplayPluginBase;
 use Drupal\views\Plugin\views\row\RowPluginBase;
+use Drupal\views\ResultRow;
 use Drupal\views\ViewExecutable;
 
 /**
@@ -158,10 +159,25 @@ class LeafletMarker extends RowPluginBase {
       return FALSE;
     }
 
-    // @todo This assumes that the use has selected WKT as the geofield output
+    // @todo This assumes that the user has selected WKT as the geofield output
     // formatter in the views field settings, and fails otherwise. Very brittle.
     $result = leaflet_process_geofield($geofield_value);
 
+    // Convert the list of geo data points into a list of leaflet markers.
+    return $this->renderLeafletMarkers($result, $row);
+  }
+
+  /**
+   * Converts the given list of geo data points into a list of leaflet markers.
+   *
+   * @param $points
+   *   A list of geofield points from {@link leaflet_process_geofield()}.
+   * @param ResultRow $row
+   *   The views result row.
+   * @return array
+   *   List of leaflet markers.
+   */
+  protected function renderLeafletMarkers($points, ResultRow $row) {
     // Render the entity with the selected view mode
     $popup_body = '';
     if ($this->options['description_field'] === '#rendered_entity' && is_object($row->_entity)) {
@@ -178,12 +194,29 @@ class LeafletMarker extends RowPluginBase {
     $label = $this->view->getStyle()
       ->getField($row->index, $this->options['name_field']);
 
-    foreach ($result as &$point) {
+    foreach ($points as &$point) {
       $point['popup'] = $popup_body;
       $point['label'] = $label;
-    }
 
-    return $result;
+      // Allow sub-classes to adjust the marker.
+      $this->alterLeafletMarker($point, $row);
+
+      // Allow modules to adjust the marker
+      \Drupal::moduleHandler()
+        ->alter('leaflet_views_feature', $point, $row, $this);
+    }
+    return $points;
+  }
+
+  /**
+   * Chance for sub-classes to adjust the leaflet marker array.
+   *
+   * For example, this can be used to add in icon configuration.
+   *
+   * @param array $point
+   * @param ResultRow $row
+   */
+  protected function alterLeafletMarker(array &$point, ResultRow $row) {
   }
 
   /**

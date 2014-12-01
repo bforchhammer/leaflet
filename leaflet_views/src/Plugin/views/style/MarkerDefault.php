@@ -7,6 +7,7 @@
 namespace Drupal\leaflet_views\Plugin\views\style;
 
 use Drupal\views\Plugin\views\style\StylePluginBase;
+use Drupal\views\ResultRow;
 
 /**
  * Style plugin to render leaflet markers.
@@ -60,6 +61,7 @@ class MarkerDefault extends StylePluginBase {
         foreach ($set['rows'] as $index => $row) {
           $this->view->row_index = $index;
           $set['rows'][$index] = $this->view->rowPlugin->render($row);
+          $this->alterLeafletMarkerPoints($set['rows'][$index], $row);
         }
       }
       $set['features'] = array();
@@ -73,10 +75,14 @@ class MarkerDefault extends StylePluginBase {
       }
 
       if ($featureGroup = $this->renderLeafletGroup($set['features'], $set['group'], $level)) {
+        // Allow modules to adjust the feature group.
+        \Drupal::moduleHandler()
+          ->alter('leaflet_views_feature_group', $featureGroup, $this);
+
         // If the rendered "feature group" is actually only a list of features,
         // merge them into the output; else simply append the feature group.
         if (empty($featureGroup['group'])) {
-          $output = array_merge($output, $featureGroup);
+          $output = array_merge($output, $featureGroup['features']);
         }
         else {
           $output[] = $featureGroup;
@@ -85,6 +91,15 @@ class MarkerDefault extends StylePluginBase {
     }
     unset($this->view->row_index);
     return $output;
+  }
+
+  /**
+   * Alter the marker definition generated from the row plugin.
+   *
+   * @param array $points
+   * @param ResultRow $row
+   */
+  protected function alterLeafletMarkerPoints(&$points, ResultRow $row) {
   }
 
   /**
@@ -100,7 +115,10 @@ class MarkerDefault extends StylePluginBase {
    *   Definition of leaflet markers, compatible with leaflet_render_map().
    */
   protected function renderLeafletGroup(array $features = array(), $title, $level) {
-    return $features;
+    return array(
+      'group' => FALSE,
+      'features' => $features,
+    );
   }
 
 }
