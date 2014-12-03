@@ -83,7 +83,8 @@
     // Only add a layer switcher if it is enabled in settings, and we have
     // at least two base layers or at least one overlay.
     if (this.layer_control == null && this.settings.layerControl && (count_layers(this.base_layers) > 1 || count_layers(this.overlays) > 0)) {
-      // Only add base-layers if we have more than one, i.e. if there actually is a choice.
+      // Only add base-layers if we have more than one, i.e. if there actually
+      // is a choice for the user.
       var _layers = this.base_layers.length > 1 ? this.base_layers : [];
       // Instantiate layer control, using settings.layerControl as settings.
       this.layer_control = new L.Control.Layers(_layers, this.overlays, this.settings.layerControl);
