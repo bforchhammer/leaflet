@@ -10,7 +10,7 @@
           // If the attached context contains any leaflet maps, make sure we have a Drupal.leaflet_widget object.
           if ($container.data('leaflet') == undefined) {
             $container.data('leaflet', new Drupal.Leaflet(L.DomUtil.get(data.mapId), data.mapId, data.map));
-            $container.data('leaflet').add_features(data.features);
+            $container.data('leaflet').add_features(data.features, true);
 
             // Add the leaflet map to our settings object to make it accessible
             data.lMap = $container.data('leaflet').lMap;
@@ -119,7 +119,7 @@
     }
   };
 
-  Drupal.Leaflet.prototype.add_features = function (features) {
+  Drupal.Leaflet.prototype.add_features = function (features, initial) {
     for (var i = 0; i < features.length; i++) {
       var feature = features[i];
       var lFeature;
@@ -158,6 +158,9 @@
 
     // Fit bounds after adding features.
     this.fitbounds();
+
+    // Allow plugins to do things after features have been added.
+    $(document).trigger('leaflet.features', [initial || false, this])
   };
 
   Drupal.Leaflet.prototype.create_feature_group = function (feature) {
