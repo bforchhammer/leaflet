@@ -58,6 +58,8 @@ function hook_leaflet_map_info() {
       //   'shadowSize'    => array('x' => '25', 'y' => '27'),
       //   'shadowAnchor'  => array('x' => '0', 'y' => '27'),
       // ),
+      // Enable and configure plugins in the plugins array.
+      'plugins' => array(),
     ),
   );
 }
