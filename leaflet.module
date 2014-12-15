@@ -50,8 +50,8 @@ function leaflet_render_map($map, $features = array(), $height = '400px') {
     '#map' => $map,
     '#attached' => array(
       'library' => array('leaflet/leaflet-drupal'),
-      'js' => array(
-        array('type' => 'setting', 'data' => array('leaflet' => $settings)),
+      'drupalSettings' => array(
+        'leaflet' => $settings
       ),
     ),
   );
