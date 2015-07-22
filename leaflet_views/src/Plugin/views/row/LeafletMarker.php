@@ -65,7 +65,7 @@ class LeafletMarker extends RowPluginBase {
     foreach ($this->displayHandler->getHandlers('field') as $field_id => $handler) {
       $label = $handler->adminLabel() ?: $field_id;
       $fields[$field_id] = $label;
-      if (is_a($handler, '\Drupal\field\Plugin\views\field\Field')) {
+      if (is_a($handler, '\Drupal\views\Plugin\views\field\Field')) {
         $field_storage_definitions = \Drupal::entityManager()
           ->getFieldStorageDefinitions($handler->getEntityType());
         $field_storage_definition = $field_storage_definitions[$handler->definition['field_name']];
