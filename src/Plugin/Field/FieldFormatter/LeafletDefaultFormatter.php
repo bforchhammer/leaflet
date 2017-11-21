@@ -210,7 +210,7 @@ class LeafletDefaultFormatter extends FormatterBase {
    *
    * This function is called from parent::view().
    */
-  public function viewElements(FieldItemListInterface $items) {
+  public function viewElements(FieldItemListInterface $items, $langcode) {
     $settings = $this->getSettings();
     $icon_url = $settings['icon']['icon_url'];
 

@@ -107,7 +107,7 @@ class LeafletAttachment extends Attachment {
   /**
    * {@inheritdoc}
    */
-  protected function getType() {
+  public function getType() {
     return 'leaflet';
   }
 
